@@ -1,0 +1,52 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# ===== Environment / secrets =====
+.env
+.env.*
+!.env.example
+
+# ===== Node / frontend =====
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ===== Runtime-generated data =====
+# Conversation memory and any auth store are created at runtime.
+memory/memory.json
+memory/auth_users.json
+memory/*_test*.json
+memory/_test_memory.json
+# Files the agents generate; keep the folder, ignore its contents.
+output/*
+!output/.gitkeep
+# Stray temp scripts written by the code runner
+temp_code.py
+
+# Backup files
+*.bak
+
+# ===== Editor / OS =====
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

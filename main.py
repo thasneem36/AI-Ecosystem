@@ -2,10 +2,19 @@
 
 Run with:  python main.py
 """
+import sys
+
 import uvicorn
 from colorama import Fore, Style, init as colorama_init
 
 from config.settings import settings
+
+# Make the console Unicode-safe (Windows cp1252 can't encode emoji otherwise).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
+    except Exception:
+        pass
 
 colorama_init(autoreset=True)
 
