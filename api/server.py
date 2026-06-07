@@ -24,6 +24,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from agents.base_agent import get_usage, reset_usage
+from agents.clarifier_agent import ClarifierAgent
 from agents.coding_agent import CodingAgent
 from agents.executor_agent import ExecutorAgent
 from agents.planner_agent import PlannerAgent
@@ -52,6 +53,7 @@ colorama_init(autoreset=True)
 router = RouterAgent()
 assistant = ChatAgent()
 tutor = TeachAgent()
+clarifier = ClarifierAgent()
 planner = PlannerAgent()
 executor = ExecutorAgent()
 coder = CodingAgent()
@@ -140,37 +142,39 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     # follow-ups ("ready", "next", "I don't get it") instead of dropping out.
     if route in ("chat", "task") and _in_teaching_session():
         route = "learn"
+    # Continuation: if we just asked a clarifying question, the user's reply
+    # answers it — proceed to the task pipeline.
+    elif route in ("chat", "task") and _awaiting_task_confirmation():
+        route = "task"
     _log_route(route)
+
+    did_work = False  # whether the heavy pipeline actually ran (for the counter)
 
     if route == "code":
         # Coding agent only — no planner/executor.
         if coder.enabled:
             messages.append(coder.run(req.message, model=model))
+            did_work = True
         else:
             messages.append(_disabled_msg("Coding"))
 
     elif route == "task":
-        # (optional Web Search) + Planner + Executor — no coding agent.
-        search_context = ""
-        if searcher.enabled:
-            search_msg = searcher.run(req.message, model=model)
-            messages.append(search_msg)
-            search_context = search_msg.get("summary", "")
+        # CONFIRM STEP — runs BEFORE Planner.
+        # If we just asked a clarifying question, fold the user's reply into the
+        # original request; otherwise judge the message on its own.
+        awaiting = _awaiting_task_confirmation()
+        effective = _clarified_task(req.message) if awaiting else req.message
 
-        steps: List[str] = []
-        if planner.enabled:
-            plan_msg = planner.run(req.message, model=model)
-            messages.append(plan_msg)
-            steps = plan_msg.get("steps", [])
+        # Only run the pipeline once the (combined) task is actually actionable.
+        # This also stops a brand-new vague request from being mistaken for a
+        # reply to a stale clarifying question.
+        if clarifier.assess(effective, model=model) == "vague":
+            history = memory_manager.get_history()
+            messages.append(clarifier.run(req.message, context={"history": history}, model=model))
+            # did_work stays False → STOP and wait for the user's reply.
         else:
-            messages.append(_disabled_msg("Planner"))
-
-        if executor.enabled:
-            messages.append(
-                executor.run(req.message, context={"steps": steps, "search": search_context}, model=model)
-            )
-        else:
-            messages.append(_disabled_msg("Executor"))
+            _run_task_pipeline(effective, model, messages)
+            did_work = True
 
     elif route == "learn":
         # Conversational tutor — confirms first, teaches in small pieces.
@@ -192,9 +196,10 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     SESSION_STATS["input_tokens"] += sum(u.get("input_tokens") or 0 for u in usage_log)
     SESSION_STATS["output_tokens"] += sum(u.get("output_tokens") or 0 for u in usage_log)
 
-    # Persist + counters. Only real work (task/code) counts as a "problem solved".
+    # Persist + counters. Only real pipeline work counts as a "problem solved"
+    # (a clarifying question does not).
     record = memory_manager.save_conversation(req.message, messages, model=model)
-    if route in ("task", "code"):
+    if did_work:
         _bump_problem_counter()
 
     return {
@@ -428,6 +433,48 @@ def _build_metrics(usage_log: List[Dict[str, Any]], elapsed: float, model: str) 
         "total_tokens": total,
         "model": model,
     }
+
+
+def _run_task_pipeline(message: str, model: str, messages: List[Dict[str, Any]]) -> None:
+    """(optional Web Search) → Planner → Executor. Appends bubbles to `messages`."""
+    search_context = ""
+    if searcher.enabled:
+        search_msg = searcher.run(message, model=model)
+        messages.append(search_msg)
+        search_context = search_msg.get("summary", "")
+
+    steps: List[str] = []
+    if planner.enabled:
+        plan_msg = planner.run(message, model=model)
+        messages.append(plan_msg)
+        steps = plan_msg.get("steps", [])
+    else:
+        messages.append(_disabled_msg("Planner"))
+
+    if executor.enabled:
+        messages.append(
+            executor.run(message, context={"steps": steps, "search": search_context}, model=model)
+        )
+    else:
+        messages.append(_disabled_msg("Executor"))
+
+
+def _awaiting_task_confirmation() -> bool:
+    """True if our last turn was a clarifying question (user is now answering it)."""
+    hist = memory_manager.get_history()
+    if not hist:
+        return False
+    msgs = hist[0].get("messages") or []
+    return bool(msgs) and msgs[-1].get("agent") == "Clarifier"
+
+
+def _clarified_task(answer: str) -> str:
+    """Combine the original vague request with the user's clarifying answer."""
+    hist = memory_manager.get_history()
+    original = hist[0].get("user_message", "") if hist else ""
+    if original:
+        return f"Original request: {original}\nUser clarification: {answer}"
+    return answer
 
 
 def _in_teaching_session() -> bool:

@@ -33,6 +33,7 @@ AGENT_COLORS = {
     "Executor": Fore.CYAN,
     "Coding": Fore.GREEN,
     "Tutor": Fore.MAGENTA,
+    "Clarifier": Fore.YELLOW,
     "Web Search": Fore.CYAN,
     "System": Fore.WHITE,
 }
