@@ -1,4 +1,4 @@
-"""Entry point for the AI Ecosystem backend.
+"""Entry point for the Koottam backend.
 
 Run with:  python main.py
 """
@@ -21,7 +21,7 @@ colorama_init(autoreset=True)
 
 def banner() -> None:
     print(Fore.GREEN + "=" * 50)
-    print(Fore.GREEN + Style.BRIGHT + "   🤖  AI ECOSYSTEM — Backend")
+    print(Fore.GREEN + Style.BRIGHT + "   🤖  KOOTTAM — Backend")
     print(Fore.GREEN + "=" * 50)
     print(f"{Fore.CYAN}Server : {Fore.WHITE}http://{settings.HOST}:{settings.PORT}")
     print(f"{Fore.CYAN}Docs   : {Fore.WHITE}http://{settings.HOST}:{settings.PORT}/docs")

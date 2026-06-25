@@ -1,4 +1,4 @@
-# 🤖 AI Ecosystem
+# 🤖 Koottam
 
 A local-first, multi-agent AI system. A **Router** classifies each message and sends it
 down the cheapest path — small talk gets a one-line reply, real problems run a

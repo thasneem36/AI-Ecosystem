@@ -29,7 +29,9 @@ class ExecutorAgent(BaseAgent):
             f"Problem: {task}\n\n"
             f"Plan:\n{plan_text}\n\n"
             f"{search_block}"
-            "Execute the plan and give the user a clear, complete answer."
+            "Open with ONE short, friendly sentence confirming what you're helping "
+            "with (e.g. \"Okay — here's a plan to improve your cafe's revenue:\"). "
+            "Then execute the plan and give the user a clear, complete answer."
         )
         reply = self.think(prompt, model=model)
         # Detect whether the executor thinks code is needed.

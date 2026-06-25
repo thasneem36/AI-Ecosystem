@@ -1,4 +1,4 @@
-"""Terminal chat client for the AI Ecosystem.
+"""Terminal chat client for Koottam.
 
 Reuses the EXACT pipeline from api/server.py (router → agents → memory →
 metrics). No logic is duplicated here — this file only handles input/output.
@@ -66,7 +66,7 @@ def session_line() -> str:
 
 def banner(model: str) -> None:
     print(Fore.GREEN + Style.BRIGHT + "=" * 56)
-    print(Fore.GREEN + Style.BRIGHT + "  🤖  AI ECOSYSTEM — Terminal")
+    print(Fore.GREEN + Style.BRIGHT + "  🤖  KOOTTAM — Terminal")
     print(Fore.GREEN + "=" * 56)
     print(f"{Fore.CYAN}Model  : {Fore.WHITE}{model}")
     print(f"{Fore.CYAN}Quit   : {Fore.WHITE}type 'exit' or 'quit'")
@@ -74,8 +74,14 @@ def banner(model: str) -> None:
 
 
 def main() -> None:
+    import uuid as _uuid
     model = settings.DEFAULT_BACKEND  # single source of truth (config/settings.py)
+    # One session_id for the entire terminal run.  Every message shares it so
+    # continuation logic (clarifier streak, teaching session) works correctly,
+    # and the history endpoint can filter to just this run.
+    session_id = str(_uuid.uuid4())
     banner(model)
+    print(Style.DIM + f"Session : {session_id}" + Style.RESET_ALL)
 
     while True:
         try:
@@ -90,7 +96,7 @@ def main() -> None:
             break
 
         try:
-            result = chat(ChatRequest(message=text, model=model))
+            result = chat(ChatRequest(message=text, model=model, session_id=session_id))
         except Exception as exc:  # noqa: BLE001
             print(Fore.RED + f"error: {exc}" + Style.RESET_ALL)
             continue

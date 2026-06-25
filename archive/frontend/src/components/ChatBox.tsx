@@ -36,7 +36,7 @@ export default function ChatBox({ messages, thinking }: Props) {
         {messages.length === 0 && !thinking && (
           <div className="mt-20 text-center text-gray-500">
             <div className="mb-3 text-5xl">🤖</div>
-            <h2 className="text-lg font-semibold text-gray-300">Welcome to your AI Ecosystem</h2>
+            <h2 className="text-lg font-semibold text-gray-300">Welcome to Koottam</h2>
             <p className="mt-1 text-sm">
               Ask a question — the <span className="text-agent-planner">Planner</span>,{" "}
               <span className="text-agent-executor">Executor</span> and{" "}

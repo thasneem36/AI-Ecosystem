@@ -38,7 +38,7 @@ export default function Sidebar() {
           <Sparkles size={18} />
         </div>
         <div>
-          <div className="text-sm font-bold leading-tight text-white">AI Ecosystem</div>
+          <div className="text-sm font-bold leading-tight text-white">Koottam</div>
           <div className="text-[11px] text-gray-500">admin console</div>
         </div>
       </div>

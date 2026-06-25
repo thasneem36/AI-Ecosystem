@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import os
+import re
 import sys
 import time
+import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -23,7 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-from agents.base_agent import get_usage, reset_usage
+from agents.base_agent import get_usage, had_error, last_call_failed, reset_usage
 from agents.clarifier_agent import ClarifierAgent
 from agents.coding_agent import CodingAgent
 from agents.executor_agent import ExecutorAgent
@@ -38,7 +40,7 @@ from tools.file_manager import list_files, _safe_path
 # --------------------------------------------------------------------------- #
 # App + agents
 # --------------------------------------------------------------------------- #
-app = FastAPI(title="AI Ecosystem", version="1.0.0")
+app = FastAPI(title="Koottam", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -72,6 +74,10 @@ AGENTS = {
 # Terminal colour per route, for the "🧭 Route: …" log line.
 _ROUTE_COLORS = {"chat": Fore.CYAN, "task": Fore.YELLOW, "code": Fore.GREEN, "learn": Fore.MAGENTA}
 
+# Most clarifying questions we'll ask before proceeding to the Planner with
+# whatever we have. Keeps the Clarifier from looping forever.
+MAX_CLARIFYING_QUESTIONS = 2
+
 # Simple in-memory runtime settings (mirrors what the frontend can change).
 # Default backend comes from the single source in config/settings.py.
 RUNTIME_SETTINGS: Dict[str, Any] = {
@@ -89,13 +95,26 @@ PROBLEMS_SOLVED_TODAY = {"count": 0, "date": datetime.now().date().isoformat()}
 # Real usage totals since the server started (in-memory; resets on restart).
 SESSION_STATS = {"api_calls": 0, "input_tokens": 0, "output_tokens": 0}
 
+# Per-session turn history, keyed by session_id.  Each value is the list of
+# turns for that session (oldest first).  Continuation helpers read ONLY the
+# session_id currently in flight — no cross-session bleed, no cross-request bleed.
+# Entries stay in memory for the lifetime of the server process; /memory/clear
+# wipes everything.
+CURRENT_CONVO: Dict[str, List[Dict[str, Any]]] = {}
+
 
 # --------------------------------------------------------------------------- #
 # Schemas
 # --------------------------------------------------------------------------- #
 class ChatRequest(BaseModel):
     message: str
-    model: str = "ollama"  # "ollama" | "groq" | "claude"
+    # None → fall back to the configured default backend (RUNTIME_SETTINGS["model"],
+    # seeded from settings.DEFAULT_BACKEND). Do NOT default to a concrete backend
+    # here, or the fallback in chat() becomes dead code.
+    model: Optional[str] = None  # "ollama" | "groq" | "claude" | None
+    # None → generate a new session_id; client should echo it back each turn
+    # so all messages in the same conversation share one session_id.
+    session_id: Optional[str] = None
 
 
 class SettingsRequest(BaseModel):
@@ -116,9 +135,14 @@ class KeysRequest(BaseModel):
 # --------------------------------------------------------------------------- #
 # Routes
 # --------------------------------------------------------------------------- #
+@app.get("/ui", response_class=FileResponse)
+def ui() -> FileResponse:
+    return FileResponse(os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html"))
+
+
 @app.get("/")
 def root() -> Dict[str, str]:
-    return {"name": "AI Ecosystem API", "status": "running", "model": RUNTIME_SETTINGS["model"]}
+    return {"name": "Koottam API", "status": "running", "model": RUNTIME_SETTINGS["model"]}
 
 
 @app.post("/chat")
@@ -130,21 +154,90 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     code → Coding agent only
     """
     model = req.model or RUNTIME_SETTINGS["model"]
+    # Use the client's session_id if provided; otherwise start a fresh session.
+    # The id is returned in every response so the client can echo it back.
+    session_id: str = req.session_id or str(uuid.uuid4())
     messages: List[Dict[str, Any]] = []
 
     # Metrics: reset the per-request usage log and start the clock.
     reset_usage()
     start = time.perf_counter()
 
+    # ── TOPIC BRIDGE ────────────────────────────────────────────────────────
+    # Phase A: user is replying to our "old topic or new?" question.
+    bridge_pending = _awaiting_topic_bridge(session_id)
+    if bridge_pending:
+        # Pop the bridge record so it doesn't confuse later helpers.
+        CURRENT_CONVO[session_id] = [
+            r for r in CURRENT_CONVO.get(session_id, [])
+            if r.get("type") != "topic_bridge"
+        ]
+        choice = _interpret_topic_reply(req.message)
+        if choice == "new":
+            # User wants a fresh start — confirm and return without touching old context.
+            msg: Dict[str, Any] = {
+                "agent": "Assistant",
+                "content": "Got it — starting fresh. What would you like to work on?",
+                "timestamp": datetime.now().isoformat(),
+            }
+            record = memory_manager.save_conversation(
+                req.message, [msg], model=model, session_id=session_id, route="chat"
+            )
+            CURRENT_CONVO.setdefault(session_id, []).append(
+                {"user_message": req.message, "messages": [msg]}
+            )
+            usage_log = get_usage()
+            return {
+                "conversation_id": record["id"],
+                "session_id": session_id,
+                "route": "chat",
+                "messages": [msg],
+                "model": model,
+                "metrics": _build_metrics(usage_log, time.perf_counter() - start, model),
+            }
+        else:
+            # User wants to continue the old session — load its context, then
+            # re-process the ORIGINAL message (the one that triggered the bridge)
+            # through the normal pipeline so they get an actual answer.
+            _load_session_context(bridge_pending["matched_session_id"], session_id)
+            req = ChatRequest(
+                message=bridge_pending["user_message"],
+                model=req.model,
+                session_id=session_id,
+            )
+            # Fall through to normal routing below with context now loaded.
+
+    # Phase B: first message of a brand-new session — check for related past sessions.
+    elif not CURRENT_CONVO.get(session_id):
+        related = _find_related_session(req.message, session_id)
+        if related:
+            bridge = _topic_bridge_msg(related)
+            CURRENT_CONVO.setdefault(session_id, []).append({
+                "type": "topic_bridge",
+                "user_message": req.message,       # saved so we can re-process it
+                "messages": [bridge],
+                "matched_session_id": related["session_id"],
+            })
+            usage_log = get_usage()
+            return {
+                "conversation_id": None,
+                "session_id": session_id,
+                "route": "topic_bridge",
+                "messages": [bridge],
+                "model": model,
+                "metrics": _build_metrics(usage_log, time.perf_counter() - start, model),
+            }
+    # ────────────────────────────────────────────────────────────────────────
+
     # 0. ROUTER — decide the path before any pipeline agent runs.
     route = router.classify(req.message, model=model)
     # Continuation: if we're mid-lesson, keep teaching for conversational/task-ish
     # follow-ups ("ready", "next", "I don't get it") instead of dropping out.
-    if route in ("chat", "task") and _in_teaching_session():
+    if route in ("chat", "task") and _in_teaching_session(session_id):
         route = "learn"
     # Continuation: if we just asked a clarifying question, the user's reply
     # answers it — proceed to the task pipeline.
-    elif route in ("chat", "task") and _awaiting_task_confirmation():
+    elif route in ("chat", "task") and _awaiting_task_confirmation(session_id):
         route = "task"
     _log_route(route)
 
@@ -159,34 +252,52 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
             messages.append(_disabled_msg("Coding"))
 
     elif route == "task":
-        # CONFIRM STEP — runs BEFORE Planner.
+        # CONFIRM STEP — runs BEFORE Planner, but must NOT loop forever.
         # If we just asked a clarifying question, fold the user's reply into the
         # original request; otherwise judge the message on its own.
-        awaiting = _awaiting_task_confirmation()
-        effective = _clarified_task(req.message) if awaiting else req.message
+        awaiting = _awaiting_task_confirmation(session_id)
+        asked = _clarifying_questions_asked(session_id)  # how many we've already asked in a row
+        effective = _clarified_task(req.message, session_id) if awaiting else req.message
 
-        # Only run the pipeline once the (combined) task is actually actionable.
-        # This also stops a brand-new vague request from being mistaken for a
-        # reply to a stale clarifying question.
-        if clarifier.assess(effective, model=model) == "vague":
-            history = memory_manager.get_history()
-            messages.append(clarifier.run(req.message, context={"history": history}, model=model))
-            # did_work stays False → STOP and wait for the user's reply.
+        # Decide: ask one (more) clarifying question, or proceed to the pipeline.
+        if asked >= MAX_CLARIFYING_QUESTIONS:
+            # Hard cap reached — act on whatever we have, don't keep asking.
+            proceed = True
+        elif awaiting:
+            # The user just answered a question. Lean strongly toward acting:
+            # only ask again if the request is STILL genuinely unusable.
+            proceed = clarifier.has_enough(effective, model=model)
         else:
+            # Brand-new request — only stop to clarify if it's genuinely vague.
+            proceed = clarifier.assess(effective, model=model) != "vague"
+
+        if proceed:
             _run_task_pipeline(effective, model, messages)
             did_work = True
+        else:
+            history = _current_history(session_id)
+            messages.append(clarifier.run(req.message, context={"history": history}, model=model))
+            # did_work stays False → STOP and wait for the user's reply.
 
     elif route == "learn":
         # Conversational tutor — confirms first, teaches in small pieces.
         # No Planner/Executor; it reads history to know where the lesson is.
-        history = memory_manager.get_history()
+        history = _current_history(session_id)
         messages.append(tutor.run(req.message, context={"history": history}, model=model))
 
     else:  # "chat" (and the safe default) — understanding layer with context.
-        # Pass recent conversation history so it follows the thread and notices mood.
-        # (History does NOT yet include this message — it's saved below.)
-        history = memory_manager.get_history()
+        # Pass the CURRENT conversation's history so it follows the thread and
+        # notices mood — never the whole memory file (no cross-conversation bleed).
+        history = _current_history(session_id)
         messages.append(assistant.run(req.message, context={"history": history}, model=model))
+
+    # A model call failed somewhere in this request (backend unreachable, API
+    # error, …). Don't let the failure text flow through as a real answer:
+    # show a clean error, don't persist it as a solution, don't count it.
+    failed = had_error()
+    if failed:
+        did_work = False
+        messages = [_error_msg()]
 
     # Build per-response metrics from the calls recorded during the pipeline.
     usage_log = get_usage()
@@ -196,14 +307,32 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     SESSION_STATS["input_tokens"] += sum(u.get("input_tokens") or 0 for u in usage_log)
     SESSION_STATS["output_tokens"] += sum(u.get("output_tokens") or 0 for u in usage_log)
 
-    # Persist + counters. Only real pipeline work counts as a "problem solved"
-    # (a clarifying question does not).
-    record = memory_manager.save_conversation(req.message, messages, model=model)
+    # Persist + counters. A failed call is NOT saved as a conversation and never
+    # counts as a "problem solved" (neither does a clarifying question).
+    if failed:
+        return {
+            "conversation_id": None,
+            "session_id": session_id,
+            "route": route,
+            "messages": messages,
+            "model": model,
+            "metrics": metrics,
+        }
+
+    record = memory_manager.save_conversation(
+        req.message, messages, model=model, session_id=session_id, route=route
+    )
+    # Track this turn in the in-process session so continuation helpers use
+    # only this session's turns — never another session's history.
+    CURRENT_CONVO.setdefault(session_id, []).append(
+        {"user_message": req.message, "messages": messages}
+    )
     if did_work:
         _bump_problem_counter()
 
     return {
         "conversation_id": record["id"],
+        "session_id": session_id,
         "route": route,
         "messages": messages,
         "model": model,
@@ -212,8 +341,8 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
 
 
 @app.get("/history")
-def history() -> Dict[str, Any]:
-    convos = memory_manager.get_history()
+def history(session_id: Optional[str] = None) -> Dict[str, Any]:
+    convos = memory_manager.get_history(session_id=session_id)
     return {"count": len(convos), "conversations": convos}
 
 
@@ -276,6 +405,7 @@ def get_settings() -> Dict[str, Any]:
 @app.post("/memory/clear")
 def clear_memory() -> Dict[str, Any]:
     memory_manager.clear()
+    CURRENT_CONVO.clear()
     return {"ok": True, "memory_count": 0}
 
 
@@ -447,6 +577,10 @@ def _run_task_pipeline(message: str, model: str, messages: List[Dict[str, Any]])
     if planner.enabled:
         plan_msg = planner.run(message, model=model)
         messages.append(plan_msg)
+        # If the planner's model call failed, don't run the executor on the
+        # error text — chat() will replace everything with a clean error.
+        if last_call_failed():
+            return
         steps = plan_msg.get("steps", [])
     else:
         messages.append(_disabled_msg("Planner"))
@@ -459,35 +593,222 @@ def _run_task_pipeline(message: str, model: str, messages: List[Dict[str, Any]])
         messages.append(_disabled_msg("Executor"))
 
 
-def _awaiting_task_confirmation() -> bool:
-    """True if our last turn was a clarifying question (user is now answering it)."""
-    hist = memory_manager.get_history()
+def _current_history(session_id: str) -> List[Dict[str, Any]]:
+    """Turns for *this session*, NEWEST first.
+
+    Scoped strictly to session_id so no two sessions can see each other's
+    history — even within the same server process.
+    """
+    return list(reversed(CURRENT_CONVO.get(session_id, [])))
+
+
+def _awaiting_task_confirmation(session_id: str) -> bool:
+    """True if the last turn in this session was a clarifying question."""
+    hist = _current_history(session_id)
     if not hist:
         return False
     msgs = hist[0].get("messages") or []
     return bool(msgs) and msgs[-1].get("agent") == "Clarifier"
 
 
-def _clarified_task(answer: str) -> str:
-    """Combine the original vague request with the user's clarifying answer."""
-    hist = memory_manager.get_history()
-    original = hist[0].get("user_message", "") if hist else ""
-    if original:
-        return f"Original request: {original}\nUser clarification: {answer}"
-    return answer
+def _clarifying_streak(session_id: str) -> List[Dict[str, Any]]:
+    """The run of most-recent turns in this session that ended in a clarifying question.
 
-
-def _in_teaching_session() -> bool:
-    """True if the most recent turn was the Tutor — i.e. a lesson is in progress.
-
-    Lets short follow-ups ('ready', 'next', 'not sure') stay in the teaching
-    flow instead of being re-routed to chat/task.
+    Returned newest-first; used to count back-to-back questions and reconstruct
+    the full request thread (original + each answer) for the Planner.
     """
-    hist = memory_manager.get_history()
+    streak: List[Dict[str, Any]] = []
+    for rec in _current_history(session_id):
+        msgs = rec.get("messages") or []
+        if msgs and msgs[-1].get("agent") == "Clarifier":
+            streak.append(rec)
+        else:
+            break
+    return streak
+
+
+def _clarifying_questions_asked(session_id: str) -> int:
+    """How many clarifying questions we've asked back-to-back in this session."""
+    return len(_clarifying_streak(session_id))
+
+
+def _clarified_task(answer: str, session_id: str) -> str:
+    """Combine the original vague request + intermediate answers + this answer.
+
+    Walks the clarifying streak so every detail the user gave across several
+    turns is available to the Planner in one coherent string.
+    """
+    streak = _clarifying_streak(session_id)  # newest-first
+    if not streak:
+        return answer
+    original = streak[-1].get("user_message", "")
+    prior_answers = [r.get("user_message", "") for r in streak[:-1]][::-1]
+    parts = [f"Original request: {original}"] if original else []
+    parts += [f"User added: {a}" for a in prior_answers if a]
+    parts.append(f"User clarification: {answer}")
+    return "\n".join(parts)
+
+
+def _in_teaching_session(session_id: str) -> bool:
+    """True if the most recent turn in this session was handled by the Tutor."""
+    hist = _current_history(session_id)
     if not hist:
         return False
     msgs = hist[0].get("messages") or []
     return bool(msgs) and msgs[-1].get("agent") == "Tutor"
+
+
+# --------------------------------------------------------------------------- #
+# Topic-bridge helpers — "old topic or new?"
+# --------------------------------------------------------------------------- #
+
+# Common words that carry no topic signal.
+_STOP_WORDS: frozenset = frozenset({
+    "about", "again", "also", "although", "always", "another", "anything",
+    "anyway", "back", "been", "before", "began", "begin", "being", "best",
+    "better", "between", "both", "came", "come", "comes", "could", "done",
+    "down", "each", "else", "ended", "even", "ever", "every", "find", "from",
+    "give", "goes", "going", "good", "have", "hello", "here", "high", "just",
+    "keep", "know", "left", "lets", "like", "look", "looked", "make", "makes",
+    "might", "more", "most", "move", "much", "need", "never", "next", "okay",
+    "once", "only", "open", "other", "over", "part", "past", "pick", "plan",
+    "please", "provide", "real", "really", "right", "said", "same", "saying",
+    "sees", "should", "show", "since", "some", "soon", "start", "started",
+    "started", "still", "such", "sure", "take", "takes", "tell", "that",
+    "their", "them", "then", "there", "these", "they", "think", "this",
+    "those", "through", "time", "today", "together", "took", "trying",
+    "under", "until", "used", "very", "want", "wants", "well", "were",
+    "what", "when", "where", "which", "while", "will", "with", "work",
+    "would", "your", "yours", "yourself",
+    # single-char and very short
+    "a", "i", "in", "is", "it", "of", "on", "or", "to", "be", "an",
+    "at", "by", "do", "if", "me", "my", "no", "ok", "so", "up", "us",
+    "we", "am", "as", "go",
+})
+
+
+# Maps surface words to a shared cluster ID so synonyms match each other.
+# e.g. "business" and "cafe" both map to "biz" → one shared topic.
+_TOPIC_MAP: Dict[str, str] = {
+    # business / commerce
+    "business": "biz", "cafe":       "biz", "shop":    "biz",
+    "store":    "biz", "restaurant": "biz", "company": "biz",
+    "startup":  "biz", "revenue":    "biz", "sales":   "biz",
+    "client":   "biz", "customers":  "biz", "income":  "biz",
+    "profit":   "biz", "market":     "biz", "price":   "biz",
+    "product":  "biz", "brand":      "biz", "brand":   "biz",
+    # performance problems
+    "slow":      "struggle", "struggling": "struggle",
+    "declining": "struggle", "dropping":   "struggle",
+    "falling":   "struggle", "failing":    "struggle",
+    # code / tech
+    "python":   "code", "script":   "code", "function": "code",
+    "program":  "code", "coding":   "code", "error":    "code",
+    "debug":    "code", "database": "code", "endpoint": "code",
+    # travel
+    "trip":     "travel", "travel":  "travel", "flight": "travel",
+    "hotel":    "travel", "vacation":"travel", "budget": "travel",
+    # learning / teaching
+    "learn":    "learn", "teach":   "learn", "explain": "learn",
+    "study":    "learn", "lesson":  "learn", "course":  "learn",
+}
+
+
+def _topics(text: str) -> frozenset:
+    """Extract topic tokens from text.
+
+    Each meaningful word (>= 4 chars, not a stop word) is mapped to its
+    cluster ID if one exists, otherwise kept as-is.  This lets synonyms
+    ('cafe' / 'business', 'slow' / 'struggling') count as the same topic.
+    """
+    result = set()
+    for w in re.findall(r"[a-z]+", text.lower()):
+        if len(w) >= 4 and w not in _STOP_WORDS:
+            result.add(_TOPIC_MAP.get(w, w))
+    return frozenset(result)
+
+
+def _find_related_session(message: str, current_session_id: str) -> Optional[Dict[str, Any]]:
+    """Return the most topically-similar past session, or None.
+
+    Matches by keyword overlap between the current message and all user
+    messages saved in each past session.  Requires at least 2 shared
+    content words — single-word overlap is not enough to trigger the bridge.
+    """
+    msg_topics = _topics(message)
+    if len(msg_topics) < 2:
+        return None  # too generic to match meaningfully
+
+    candidates = memory_manager.get_recent_sessions(limit=8, exclude_session=current_session_id)
+    best: Optional[Dict[str, Any]] = None
+    best_score = 1  # must beat 1 → needs score >= 2
+
+    for sess in candidates:
+        sess_text = " ".join(sess.get("user_messages", []))
+        sess_topics = _topics(sess_text)
+        score = len(msg_topics & sess_topics)
+        if score > best_score:
+            best_score = score
+            best = sess
+
+    return best
+
+
+def _awaiting_topic_bridge(session_id: str) -> Optional[Dict[str, Any]]:
+    """Return the pending bridge record if we're waiting for the user's old/new answer."""
+    convo = CURRENT_CONVO.get(session_id, [])
+    if convo and convo[-1].get("type") == "topic_bridge":
+        return convo[-1]
+    return None
+
+
+def _interpret_topic_reply(reply: str) -> str:
+    """Return 'old' or 'new' based on the user's answer to the bridge question.
+
+    Defaults to 'new' — we never silently load old context; the user must
+    clearly indicate they want it.
+    """
+    low = reply.lower().strip()
+    old_signals = (
+        "yes", "yeah", "yep", "yup", "that", "same", "old", "continue",
+        "previous", "before", "pick up", "that one", "it is", "correct",
+    )
+    new_signals = (
+        "no", "nope", "new", "fresh", "different", "something else",
+        "not that", "another", "start over",
+    )
+    for sig in new_signals:
+        if sig in low:
+            return "new"
+    for sig in old_signals:
+        if sig in low:
+            return "old"
+    return "new"  # safe default: don't assume
+
+
+def _load_session_context(old_session_id: str, current_session_id: str) -> None:
+    """Prepend turns from an old session into the current session's in-memory history.
+
+    After this call, _current_history(current_session_id) includes the old
+    session's turns (oldest first) so the agents have full context.
+    """
+    old_turns = list(reversed(memory_manager.get_history(session_id=old_session_id)))
+    CURRENT_CONVO.setdefault(current_session_id, []).extend([
+        {"user_message": r.get("user_message", ""), "messages": r.get("messages", [])}
+        for r in old_turns
+    ])
+
+
+def _topic_bridge_msg(session: Dict[str, Any]) -> Dict[str, Any]:
+    """Build the agent message that asks 'old topic or new?'"""
+    topic = (session.get("first_message") or "").strip()
+    short = topic[:70] + ("…" if len(topic) > 70 else "")
+    content = (
+        f"Before I start — it looks like you might be continuing from an earlier "
+        f'conversation about **"{short}"**.\n\n'
+        f"Are we picking up where we left off, or is this something new?"
+    )
+    return {"agent": "TopicBridge", "content": content, "timestamp": datetime.now().isoformat()}
 
 
 def _backend_online() -> bool:
@@ -520,6 +841,23 @@ def _disabled_msg(agent_name: str) -> Dict[str, Any]:
         "agent": "System",
         "color": "white",
         "content": f"⛔ The {agent_name} agent is currently stopped. Enable it in Agent Control to use this route.",
+        "timestamp": datetime.now().isoformat(),
+    }
+
+
+def _error_msg() -> Dict[str, Any]:
+    """Clean, user-facing message shown when a model/API call failed.
+
+    Replaces the raw '[Agent] Error: …' / 'Could not reach …' text so backend
+    failures never leak through as if they were a real answer.
+    """
+    return {
+        "agent": "System",
+        "color": "white",
+        "content": (
+            "⚠️ I couldn't complete that — the AI backend didn't respond. "
+            "Check that the model/API is reachable (and the API key is set), then try again."
+        ),
         "timestamp": datetime.now().isoformat(),
     }
 

@@ -27,14 +27,29 @@ def reset_usage() -> None:
     _usage_log.set([])
 
 
-def record_usage(model: str, input_tokens: Optional[int], output_tokens: Optional[int]) -> None:
-    """Record one model/API call (called automatically by think())."""
+def record_usage(
+    model: str,
+    input_tokens: Optional[int],
+    output_tokens: Optional[int],
+    error: bool = False,
+) -> None:
+    """Record one model/API call (called automatically by think()).
+
+    `error=True` marks a call that failed (backend unreachable, API error, …)
+    so the caller can short-circuit the pipeline instead of treating the
+    failure text as a real answer.
+    """
     log = _usage_log.get()
     if log is None:
         log = []
         _usage_log.set(log)
     log.append(
-        {"model": model, "input_tokens": input_tokens, "output_tokens": output_tokens}
+        {
+            "model": model,
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "error": error,
+        }
     )
 
 
@@ -42,6 +57,18 @@ def get_usage() -> List[Dict[str, Any]]:
     """Return the calls recorded since the last reset_usage()."""
     log = _usage_log.get()
     return list(log) if log else []
+
+
+def had_error() -> bool:
+    """True if ANY model call in the current request failed."""
+    log = _usage_log.get()
+    return bool(log) and any(c.get("error") for c in log)
+
+
+def last_call_failed() -> bool:
+    """True if the most recent model call failed (for mid-pipeline short-circuit)."""
+    log = _usage_log.get()
+    return bool(log) and bool(log[-1].get("error"))
 
 
 class BaseAgent:
@@ -160,7 +187,7 @@ class BaseAgent:
             return reply
         except requests.exceptions.ConnectionError:
             self.status = "offline"
-            record_usage(model_name, None, None)  # still a call attempt, no tokens
+            record_usage(model_name, None, None, error=True)  # call attempt, failed
             if model == "ollama":
                 return (
                     f"[{self.name}] Could not reach Ollama on {settings.OLLAMA_BASE_URL}. "
@@ -169,7 +196,7 @@ class BaseAgent:
             return f"[{self.name}] Could not reach the {model} API. Check your network/API key."
         except Exception as exc:  # noqa: BLE001
             self.status = "error"
-            record_usage(model_name, None, None)
+            record_usage(model_name, None, None, error=True)
             return f"[{self.name}] Error: {exc}"
 
     def run(self, task: str, context: Optional[Dict[str, Any]] = None, model: str = "ollama") -> Dict[str, Any]:

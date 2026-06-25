@@ -28,6 +28,17 @@ class ClarifierAgent(BaseAgent):
         "Reply only 'clear' or 'vague'."
     )
 
+    # Lenient judge used AFTER the user has answered a clarifying question:
+    # "do I now have enough to act?" — biased toward proceeding.
+    _enough_prompt = (
+        "You decide whether there is now ENOUGH to produce a useful first plan. "
+        "The user has ALREADY answered a clarifying question, so lean strongly "
+        "toward 'yes'. Say 'no' ONLY if the request is still completely unusable — "
+        "no identifiable topic AND no goal or direction at all. If there is any "
+        "topic and any goal (e.g. 'a cafe' + 'improve slow sales'), say 'yes'.\n"
+        "Reply with EXACTLY one word, lowercase: 'yes' or 'no'."
+    )
+
     # Separate persona for writing the clarifying reply.
     _clarify_prompt = (
         "You are clarifying a vague request before any work starts.\n"
@@ -50,6 +61,22 @@ class ClarifierAgent(BaseAgent):
         if "vague" in raw:
             return "vague"
         return "clear"
+
+    def has_enough(self, message: str, model: str = "ollama") -> bool:
+        """True if there's now enough to act on (used after the user answered).
+
+        Biased toward proceeding: only returns False on an explicit 'no', so a
+        stray reply or backend hiccup proceeds rather than re-asking forever.
+        """
+        original_prompt = self.system_prompt
+        self.system_prompt = self._enough_prompt
+        try:
+            raw = self.think(
+                f"Information so far:\n{message}\n\nIs there enough to act?", model=model
+            ).strip().lower()
+        finally:
+            self.system_prompt = original_prompt
+        return "no" not in raw  # default to proceeding unless an explicit 'no'
 
     def run(self, task: str, context: Optional[Dict[str, Any]] = None, model: str = "ollama") -> Dict[str, Any]:
         """Produce the restate-and-confirm reply for a vague task."""

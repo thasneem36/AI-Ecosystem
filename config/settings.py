@@ -1,4 +1,4 @@
-"""Central configuration for the AI Ecosystem.
+"""Central configuration for Koottam.
 
 All values can be overridden via the .env file at the project root.
 """
@@ -76,7 +76,8 @@ class Settings:
     # ----- Paths -----
     BASE_DIR: Path = BASE_DIR
     OUTPUT_DIR: Path = BASE_DIR / "output"
-    MEMORY_FILE: Path = BASE_DIR / "memory" / "memory.json"
+    MEMORY_FILE: Path = BASE_DIR / "memory" / "memory.json"  # legacy; kept for migration read
+    DB_FILE: Path = BASE_DIR / "memory" / "koottam.db"
 
     # ----- CORS -----
     CORS_ORIGINS: list = os.getenv(
