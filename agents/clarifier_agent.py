@@ -18,14 +18,22 @@ class ClarifierAgent(BaseAgent):
     color = "yellow"
 
     # Used only for the vague/clear judgement (one word out).
+    # Deliberately conservative — only fire when the cost of a wrong guess is HIGH.
     system_prompt = (
-        "You judge whether a task request is specific enough to act on. "
-        "Reply with EXACTLY ONE word, lowercase: 'clear' or 'vague'.\n"
-        "- vague : too broad, missing key details, or could mean many things "
-        "(e.g. 'my business is slow', 'help me grow', 'make it better').\n"
-        "- clear : specific and actionable (e.g. 'write a SQL query to count "
-        "users per month', 'plan a 3-day Tokyo trip for 2 people on a budget').\n"
-        "Reply only 'clear' or 'vague'."
+        "You decide whether a request needs a clarifying question BEFORE any work starts.\n"
+        "Say 'vague' ONLY when ALL of the following are true:\n"
+        "  1. Multiple very different interpretations exist.\n"
+        "  2. Acting on the wrong one would: waste significant work, touch the wrong file,\n"
+        "     run the wrong command, or produce materially incorrect output.\n"
+        "  3. The recent conversation does NOT already resolve the ambiguity.\n"
+        "Say 'clear' (proceed) when:\n"
+        "  - A wrong guess costs only a one-line correction.\n"
+        "  - The most reasonable interpretation is obvious, even if not perfectly stated.\n"
+        "  - The prior turn(s) established a pattern (game, counting, Q&A loop, step-by-step)\n"
+        "    and the current message is a short continuation (e.g. '1', 'next', 'yes', 'go on').\n"
+        "  - The message is short but the conversation context makes intent clear.\n"
+        "When in doubt, say 'clear' — the user can correct a wrong guess in one line.\n"
+        "Reply EXACTLY ONE word, lowercase: 'clear' or 'vague'."
     )
 
     # Lenient judge used AFTER the user has answered a clarifying question:
@@ -55,9 +63,31 @@ class ClarifierAgent(BaseAgent):
         "Do NOT give a plan, steps, or a solution yet. Be warm and concise."
     )
 
-    def assess(self, message: str, model: str = "ollama") -> str:
-        """Return 'vague' or 'clear'. Defaults to 'clear' (proceed) if unsure."""
-        raw = self.think(f"Request: {message}\n\nJudge:", model=model).strip().lower()
+    def assess(
+        self,
+        message: str,
+        model: str = "ollama",
+        history: Optional[list] = None,
+    ) -> str:
+        """Return 'vague' or 'clear'. Defaults to 'clear' (proceed) if unsure.
+
+        history (newest-first) is prepended so the model can detect continuation
+        patterns — e.g. a prior game/counting turn makes a bare '1' clearly a reply,
+        not an ambiguous new request.
+        """
+        ctx = ""
+        if history:
+            last = history[0]  # most recent turn
+            prior_msgs = last.get("messages") or []
+            prior_content = (prior_msgs[-1].get("content", "") if prior_msgs else "")[:300]
+            prior_user = last.get("user_message", "")
+            if prior_user or prior_content:
+                ctx = (
+                    f"Most recent prior turn:\n"
+                    f"  User said: {prior_user}\n"
+                    f"  Assistant replied: {prior_content}\n\n"
+                )
+        raw = self.think(f"{ctx}Current request: {message}\n\nJudge:", model=model).strip().lower()
         if "vague" in raw:
             return "vague"
         return "clear"

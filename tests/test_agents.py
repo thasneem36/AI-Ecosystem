@@ -172,16 +172,75 @@ class TestCodingAgent(unittest.TestCase):
     def test_extract_pure_prose_returns_empty(self):
         self.assertEqual(CodingAgent._extract_code("Here is how you would do it conceptually."), "")
 
-    def test_run_executes_and_saves(self):
+    def test_run_executes_without_saving_by_default(self):
         agent = CodingAgent()
         agent.think = lambda *a, **k: "```python\nprint('hello world')\n```"
         msg = agent.run("print hello")
         self.assertEqual(msg["agent"], "Coding")
         self.assertIn("hello world", msg["execution"]["stdout"])
         self.assertTrue(msg["execution"]["success"])
+        self.assertNotIn("file", msg)  # no file saved unless explicitly asked
+
+    def test_run_saves_when_requested(self):
+        agent = CodingAgent()
+        agent.think = lambda *a, **k: "```python\nprint('hello world')\n```"
+        msg = agent.run("create a file that prints hello world")
+        self.assertEqual(msg["agent"], "Coding")
+        self.assertIn("file", msg)  # file saved because user asked
+
+    def test_detect_language_python(self):
+        self.assertEqual(CodingAgent._detect_language("write a function to add numbers"), "python")
+        self.assertEqual(CodingAgent._detect_language("sort a list"), "python")
+
+    def test_detect_language_html(self):
+        self.assertEqual(CodingAgent._detect_language("build a to-do app in html css js"), "html")
+        self.assertEqual(CodingAgent._detect_language("make a webpage"), "html")
+        self.assertEqual(CodingAgent._detect_language("create a frontend with JavaScript"), "html")
+        self.assertEqual(CodingAgent._detect_language("a web app with css"), "html")
+
+    def test_extract_web_code_from_fence(self):
+        text = "```html\n<h1>Hello</h1>\n```"
+        self.assertEqual(CodingAgent._extract_web_code(text), "<h1>Hello</h1>")
+
+    def test_python_run_includes_description_before_fence(self):
+        # Description before the fence (common LLM format)
+        agent = CodingAgent()
+        agent.think = lambda *a, **k: (
+            "This prints numbers 1 to 10.\n```python\nfor i in range(1, 11): print(i)\n```"
+        )
+        msg = agent.run("write a python program to print 1 to 10")
+        self.assertIn("This prints numbers 1 to 10", msg["content"])
+        self.assertIn("execution", msg)
+        self.assertTrue(msg["execution"]["success"])
+
+    def test_python_run_includes_description_after_fence(self):
+        # Description after the fence (also common — must NOT be dropped)
+        agent = CodingAgent()
+        agent.think = lambda *a, **k: (
+            "```python\nfor i in range(1, 11): print(i)\n```\nThis prints numbers 1 to 10."
+        )
+        msg = agent.run("write a python program to print 1 to 10")
+        self.assertIn("This prints numbers 1 to 10", msg["content"])
+        self.assertIn("execution", msg)
+
+    def test_web_run_saves_html_no_execution(self):
+        agent = CodingAgent()
+        agent.think = lambda *a, **k: (
+            "A to-do list where you can add and remove tasks.\n```html\n<h1>Todo App</h1>\n```"
+        )
+        msg = agent.run("build a to-do app in html css js")
+        self.assertEqual(msg["agent"], "Coding")
+        self.assertIn("file", msg)                          # always saved
+        self.assertTrue(msg["file"]["name"].endswith(".html"))
+        self.assertNotIn("execution", msg)                  # never run through Python
+        self.assertIn("browser", msg["content"])
+        self.assertIn("to-do list", msg["content"])         # description preserved
 
 
 class TestCodeRunner(unittest.TestCase):
+    # ------------------------------------------------------------------ #
+    # Basic execution (must still work after sandboxing)
+    # ------------------------------------------------------------------ #
     def test_run_python_success(self):
         result = run_python("print(2 + 2)")
         self.assertTrue(result["success"])
@@ -191,6 +250,52 @@ class TestCodeRunner(unittest.TestCase):
         result = run_python("raise ValueError('boom')")
         self.assertFalse(result["success"])
         self.assertIn("boom", result["stderr"])
+
+    def test_safe_stdlib_allowed(self):
+        code = (
+            "import math, json, random, re, datetime, collections, itertools\n"
+            "print(math.sqrt(16))\n"
+        )
+        result = run_python(code)
+        self.assertTrue(result["success"], result["stderr"])
+        self.assertIn("4.0", result["stdout"])
+
+    # ------------------------------------------------------------------ #
+    # Sandbox — these must be BLOCKED
+    # ------------------------------------------------------------------ #
+    def _assert_blocked(self, code: str, label: str = ""):
+        result = run_python(code)
+        self.assertFalse(result["success"], f"{label}: expected block but got success")
+        self.assertIn("blocked for safety", result["stderr"],
+                      f"{label}: block message missing. stderr={result['stderr']!r}")
+        self.assertTrue(result.get("blocked"), f"{label}: 'blocked' key not set")
+
+    def test_blocks_os_import(self):
+        self._assert_blocked("import os\nos.system('echo pwned')", "os")
+
+    def test_blocks_subprocess_import(self):
+        self._assert_blocked("import subprocess", "subprocess")
+
+    def test_blocks_socket_import(self):
+        self._assert_blocked("import socket", "socket")
+
+    def test_blocks_shutil_import(self):
+        self._assert_blocked("import shutil\nshutil.rmtree('.')", "shutil")
+
+    def test_blocks_from_os_import(self):
+        self._assert_blocked("from os import system\nsystem('echo hi')", "from os import")
+
+    def test_blocks_eval(self):
+        self._assert_blocked("eval('1+1')", "eval")
+
+    def test_blocks_exec(self):
+        self._assert_blocked("exec('x=1')", "exec")
+
+    def test_blocks_write_mode_open(self):
+        self._assert_blocked("open('secret.txt', 'w').write('oops')", "open write")
+
+    def test_blocks_absolute_path_open(self):
+        self._assert_blocked("open('/etc/passwd')", "absolute path open")
 
 
 class TestFileManager(unittest.TestCase):

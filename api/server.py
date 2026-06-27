@@ -20,9 +20,10 @@ import psutil
 import requests
 from colorama import Fore, Style, init as colorama_init
 from dotenv import set_key
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from agents.base_agent import get_usage, had_error, last_call_failed, reset_usage
@@ -36,6 +37,7 @@ from agents.teach_agent import TeachAgent
 from config.settings import settings
 from memory.memory_manager import memory_manager
 from tools.file_manager import list_files, _safe_path
+from auth.auth_manager import auth_manager
 
 # --------------------------------------------------------------------------- #
 # App + agents
@@ -51,6 +53,8 @@ app.add_middleware(
 )
 
 colorama_init(autoreset=True)
+
+security = HTTPBearer(auto_error=False)
 
 router = RouterAgent()
 assistant = ChatAgent()
@@ -85,11 +89,6 @@ RUNTIME_SETTINGS: Dict[str, Any] = {
     "theme": "dark",
 }
 
-# There is no account system yet — only the single local user running the app.
-# (Honest placeholder: NOT a fabricated user list.)
-USERS: List[Dict[str, Any]] = [
-    {"id": 1, "name": "Local User", "email": "local", "last_active": datetime.now().isoformat(), "blocked": False},
-]
 PROBLEMS_SOLVED_TODAY = {"count": 0, "date": datetime.now().date().isoformat()}
 
 # Real usage totals since the server started (in-memory; resets on restart).
@@ -115,6 +114,10 @@ class ChatRequest(BaseModel):
     # None → generate a new session_id; client should echo it back each turn
     # so all messages in the same conversation share one session_id.
     session_id: Optional[str] = None
+    # True when the user explicitly clicked "+ New chat" — skip the topic-bridge
+    # check on the first message so we never ask "old or new?" right after they
+    # already declared this is new.
+    new_chat: bool = False
 
 
 class SettingsRequest(BaseModel):
@@ -132,6 +135,62 @@ class KeysRequest(BaseModel):
     ollama_model: Optional[str] = None
 
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class CreateAccountRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "user"
+    token_limit: int = 5000
+    reset_hours: float = 3.0
+
+
+class UpdateAccountRequest(BaseModel):
+    is_active: Optional[int] = None
+    token_limit: Optional[int] = None
+    reset_hours: Optional[float] = None
+    role: Optional[str] = None
+    password: Optional[str] = None
+
+
+# --------------------------------------------------------------------------- #
+# Auth dependencies
+# --------------------------------------------------------------------------- #
+def get_current_account(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+) -> Optional[Dict[str, Any]]:
+    """Bootstrap mode: if no accounts exist, allow all requests (returns None).
+    Once an admin account is created, every request must carry a valid token.
+    """
+    if not auth_manager.has_accounts():
+        return None
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    account = auth_manager.verify_session(credentials.credentials)
+    if not account:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    return account
+
+
+def require_admin(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+) -> Optional[Dict[str, Any]]:
+    """Like get_current_account, but also enforces the admin role."""
+    if not auth_manager.has_accounts():
+        return None  # Bootstrap mode — admin panel is open until first account is created
+    if not credentials:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    account = auth_manager.verify_session(credentials.credentials)
+    if not account:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    if account.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return account
+
+
 # --------------------------------------------------------------------------- #
 # Routes
 # --------------------------------------------------------------------------- #
@@ -145,8 +204,52 @@ def root() -> Dict[str, str]:
     return {"name": "Koottam API", "status": "running", "model": RUNTIME_SETTINGS["model"]}
 
 
+# --------------------------------------------------------------------------- #
+# Auth endpoints
+# --------------------------------------------------------------------------- #
+@app.get("/auth/status")
+def auth_status() -> Dict[str, Any]:
+    """Unauthenticated. Tells the frontend whether accounts exist yet."""
+    return {"needs_setup": not auth_manager.has_accounts()}
+
+
+@app.post("/auth/login")
+def auth_login(req: LoginRequest) -> Dict[str, Any]:
+    session = auth_manager.login(req.username, req.password)
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return session
+
+
+@app.post("/auth/logout")
+def auth_logout(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+) -> Dict[str, Any]:
+    if credentials:
+        auth_manager.logout(credentials.credentials)
+    return {"ok": True}
+
+
+@app.get("/auth/me")
+def auth_me(account: Optional[Dict[str, Any]] = Depends(get_current_account)) -> Dict[str, Any]:
+    if not account:
+        return {"authenticated": False, "needs_setup": True}
+    stats = auth_manager.get_usage_stats(account["id"])
+    return {
+        "authenticated": True,
+        "username": account["username"],
+        "role": account["role"],
+        "token_limit": account["token_limit"],
+        "reset_hours": account["reset_hours"],
+        **stats,
+    }
+
+
 @app.post("/chat")
-def chat(req: ChatRequest) -> Dict[str, Any]:
+def chat(
+    req: ChatRequest,
+    account: Optional[Dict[str, Any]] = Depends(get_current_account),
+) -> Dict[str, Any]:
     """Route the message first, then run only the agents that route needs.
 
     chat → one short friendly reply (no pipeline)
@@ -154,14 +257,26 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     code → Coding agent only
     """
     model = req.model or RUNTIME_SETTINGS["model"]
-    # Use the client's session_id if provided; otherwise start a fresh session.
-    # The id is returned in every response so the client can echo it back.
     session_id: str = req.session_id or str(uuid.uuid4())
     messages: List[Dict[str, Any]] = []
 
     # Metrics: reset the per-request usage log and start the clock.
     reset_usage()
     start = time.perf_counter()
+
+    # Per-account usage limit (skip in bootstrap mode when no accounts exist).
+    if account:
+        limit = auth_manager.check_limit(account["id"])
+        if not limit["allowed"]:
+            secs = int(limit["resets_in_seconds"])
+            hrs, mins = secs // 3600, (secs % 3600) // 60
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    f"Usage limit reached ({limit['tokens_used']}/{limit['token_limit']} tokens). "
+                    f"Resets in {hrs}h {mins}m."
+                ),
+            )
 
     # ── TOPIC BRIDGE ────────────────────────────────────────────────────────
     # Phase A: user is replying to our "old topic or new?" question.
@@ -208,7 +323,9 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
             # Fall through to normal routing below with context now loaded.
 
     # Phase B: first message of a brand-new session — check for related past sessions.
-    elif not CURRENT_CONVO.get(session_id):
+    # Skip entirely when the user explicitly clicked "+ New chat": they already
+    # declared this is new, so asking "old or new?" would be redundant.
+    elif not CURRENT_CONVO.get(session_id) and not req.new_chat:
         related = _find_related_session(req.message, session_id)
         if related:
             bridge = _topic_bridge_msg(related)
@@ -244,10 +361,26 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     did_work = False  # whether the heavy pipeline actually ran (for the counter)
 
     if route == "code":
-        # Coding agent only — no planner/executor.
+        # Coding agent — same clarifier gate as TASK so vague code requests get
+        # one question before we write the wrong thing. CHAT route never clarifies.
         if coder.enabled:
-            messages.append(coder.run(req.message, model=model))
-            did_work = True
+            awaiting = _awaiting_task_confirmation(session_id)
+            asked = _clarifying_questions_asked(session_id)
+            effective = _clarified_task(req.message, session_id) if awaiting else req.message
+            history = _current_history(session_id)
+
+            if asked >= MAX_CLARIFYING_QUESTIONS:
+                proceed = True
+            elif awaiting:
+                proceed = clarifier.has_enough(effective, model=model)
+            else:
+                proceed = clarifier.assess(effective, model=model, history=history) != "vague"
+
+            if proceed:
+                messages.append(coder.run(effective, model=model))
+                did_work = True
+            else:
+                messages.append(clarifier.run(req.message, context={"history": history}, model=model))
         else:
             messages.append(_disabled_msg("Coding"))
 
@@ -258,6 +391,7 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
         awaiting = _awaiting_task_confirmation(session_id)
         asked = _clarifying_questions_asked(session_id)  # how many we've already asked in a row
         effective = _clarified_task(req.message, session_id) if awaiting else req.message
+        history = _current_history(session_id)  # used by both assess() and clarifier.run()
 
         # Decide: ask one (more) clarifying question, or proceed to the pipeline.
         if asked >= MAX_CLARIFYING_QUESTIONS:
@@ -268,14 +402,14 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
             # only ask again if the request is STILL genuinely unusable.
             proceed = clarifier.has_enough(effective, model=model)
         else:
-            # Brand-new request — only stop to clarify if it's genuinely vague.
-            proceed = clarifier.assess(effective, model=model) != "vague"
+            # Brand-new request — only stop to clarify if it's genuinely costly to
+            # guess wrong. Pass history so the model recognises continuation patterns.
+            proceed = clarifier.assess(effective, model=model, history=history) != "vague"
 
         if proceed:
             _run_task_pipeline(effective, model, messages)
             did_work = True
         else:
-            history = _current_history(session_id)
             messages.append(clarifier.run(req.message, context={"history": history}, model=model))
             # did_work stays False → STOP and wait for the user's reply.
 
@@ -306,6 +440,17 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     SESSION_STATS["api_calls"] += len(usage_log)
     SESSION_STATS["input_tokens"] += sum(u.get("input_tokens") or 0 for u in usage_log)
     SESSION_STATS["output_tokens"] += sum(u.get("output_tokens") or 0 for u in usage_log)
+
+    # Per-account usage tracking.
+    if account and not failed:
+        in_tok = sum(u.get("input_tokens") or 0 for u in usage_log)
+        out_tok = sum(u.get("output_tokens") or 0 for u in usage_log)
+        auth_manager.record_usage(
+            account["id"],
+            tokens=in_tok + out_tok,
+            api_calls=len(usage_log),
+            context_bytes=len(req.message.encode("utf-8")),
+        )
 
     # Persist + counters. A failed call is NOT saved as a conversation and never
     # counts as a "problem solved" (neither does a clarifying question).
@@ -474,8 +619,7 @@ def dashboard() -> Dict[str, Any]:
         "system_status": "online" if backend_up else "degraded",
         "activity": _activity_series(),          # last 7 days, from memory timestamps
         "recent_activity": _recent_activity(),   # from memory + output/ files
-        # Honest: there is no account system yet.
-        "users": {"count": 1, "implemented": False, "label": "1 (local)"},
+        "users": {"count": len(auth_manager.get_accounts()), "implemented": True},
     }
 
 
@@ -525,18 +669,55 @@ def control_agent(agent_key: str, action: str) -> Dict[str, Any]:
 
 
 @app.get("/admin/users")
-def admin_users() -> Dict[str, Any]:
-    return {"users": USERS}
+def admin_users(_account: Optional[Dict[str, Any]] = Depends(require_admin)) -> Dict[str, Any]:
+    return {"users": auth_manager.get_accounts()}
 
 
-@app.post("/admin/users/{user_id}")
-def admin_user_action(user_id: int, req: UserActionRequest) -> Dict[str, Any]:
-    for u in USERS:
-        if u["id"] == user_id:
-            if req.blocked is not None:
-                u["blocked"] = req.blocked
-            return {"ok": True, "user": u}
-    return {"ok": False, "error": "user not found"}
+@app.get("/admin/accounts")
+def admin_accounts(_account: Optional[Dict[str, Any]] = Depends(require_admin)) -> Dict[str, Any]:
+    return {"accounts": auth_manager.get_accounts()}
+
+
+@app.post("/admin/accounts")
+def admin_create_account(
+    req: CreateAccountRequest,
+    _account: Optional[Dict[str, Any]] = Depends(require_admin),
+) -> Dict[str, Any]:
+    try:
+        acc = auth_manager.create_account(
+            req.username, req.password, req.role, req.token_limit, req.reset_hours
+        )
+        return {"ok": True, "account": acc}
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@app.put("/admin/accounts/{account_id}")
+def admin_update_account(
+    account_id: int,
+    req: UpdateAccountRequest,
+    _account: Optional[Dict[str, Any]] = Depends(require_admin),
+) -> Dict[str, Any]:
+    ok = auth_manager.update_account(
+        account_id,
+        is_active=req.is_active,
+        token_limit=req.token_limit,
+        reset_hours=req.reset_hours,
+        role=req.role,
+        password=req.password,
+    )
+    if not ok:
+        raise HTTPException(status_code=404, detail="Account not found")
+    return {"ok": True}
+
+
+@app.post("/admin/accounts/{account_id}/reset-usage")
+def admin_reset_usage(
+    account_id: int,
+    _account: Optional[Dict[str, Any]] = Depends(require_admin),
+) -> Dict[str, Any]:
+    auth_manager.reset_usage(account_id)
+    return {"ok": True}
 
 
 # --------------------------------------------------------------------------- #

@@ -576,6 +576,138 @@
       letter-spacing: 0.025em;
     }
     .input-hint kbd { font-family: inherit; }
+
+    /* ── Login overlay ── */
+    #login-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(6,6,15,0.94);
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    .login-card {
+      background: rgba(10,10,24,0.97);
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 40px 36px; width: 360px;
+      box-shadow: 0 28px 80px rgba(0,0,0,0.65), 0 0 0 0.5px rgba(255,255,255,0.04) inset;
+    }
+    .login-card h2 {
+      font-size: 19px; font-weight: 800; letter-spacing: -0.04em;
+      color: #e8e8f8; margin-bottom: 5px;
+    }
+    .login-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 26px; }
+    .login-field {
+      display: block; width: 100%;
+      background: rgba(255,255,255,0.035); border: 1px solid var(--border);
+      border-radius: 10px; padding: 11px 14px; color: #ddddf0;
+      font-family: var(--font); font-size: 13.5px;
+      outline: none; margin-bottom: 10px; transition: border-color 0.18s;
+    }
+    .login-field:focus { border-color: rgba(99,102,241,0.45); }
+    .login-field::placeholder { color: #2e2e50; }
+    .login-submit {
+      display: block; width: 100%; padding: 11px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none; border-radius: 10px; color: #fff;
+      font-family: var(--font); font-size: 13.5px; font-weight: 700;
+      cursor: pointer; margin-top: 6px; transition: opacity 0.18s;
+    }
+    .login-submit:hover { opacity: 0.88; }
+    .login-submit:disabled { opacity: 0.3; cursor: not-allowed; }
+    #login-err { font-size: 12px; color: #f87171; margin-top: 10px; min-height: 16px; text-align: center; }
+    #login-setup-code {
+      display: block; background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.15); border-radius: 8px;
+      padding: 10px 14px; font-size: 12px; color: #a5b4fc;
+      font-family: monospace; line-height: 1.6; margin: 12px 0;
+    }
+
+    /* ── Usage bar ── */
+    #usage-bar-wrap {
+      position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+      width: 300px; z-index: 190; display: none;
+    }
+    #usage-bar-bg { height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; overflow: hidden; }
+    #usage-bar-fill { height: 100%; width: 0%; background: #6366f1; border-radius: 1px; transition: width 0.5s ease, background 0.3s; }
+    #usage-label { font-size: 9.5px; color: #2e2e50; text-align: center; margin-top: 3px; letter-spacing: 0.03em; }
+
+    /* ── Nav user badge ── */
+    #nav-username { font-size: 11.5px; font-weight: 600; color: #7577f4; letter-spacing: 0.02em; }
+    #logout-btn {
+      background: transparent; border: 1px solid rgba(255,255,255,0.055);
+      color: #2e2e50; font-size: 11px; font-family: var(--font); font-weight: 600;
+      border-radius: 7px; padding: 4px 9px; cursor: pointer; transition: all 0.18s;
+    }
+    #logout-btn:hover { border-color: rgba(239,68,68,0.28); color: #f87171; }
+    #admin-btn {
+      background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.18);
+      color: #6366f1; font-size: 11px; font-family: var(--font); font-weight: 600;
+      border-radius: 7px; padding: 4px 9px; cursor: pointer; transition: all 0.18s; display: none;
+    }
+    #admin-btn:hover { background: rgba(99,102,241,0.15); }
+
+    /* ── Admin modal ── */
+    #admin-modal {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(6,6,15,0.88);
+      display: none; align-items: flex-start; justify-content: center;
+      backdrop-filter: blur(8px); overflow-y: auto; padding: 40px 16px;
+    }
+    .admin-card {
+      background: rgba(10,10,22,0.98); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 32px; width: min(780px, 96vw);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    }
+    .admin-card h3 {
+      font-size: 16px; font-weight: 800; letter-spacing: -0.04em; color: #e8e8f8;
+      margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .admin-close {
+      background: none; border: none; color: #2e2e50; font-size: 20px;
+      cursor: pointer; line-height: 1; padding: 2px 6px;
+    }
+    .admin-close:hover { color: #f87171; }
+    .acc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .acc-table th {
+      color: #2e2e50; font-weight: 700; letter-spacing: 0.05em; font-size: 10px;
+      text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .acc-table td { padding: 10px 10px; border-bottom: 1px solid var(--border2); color: #c0c0e0; vertical-align: middle; }
+    .acc-table tr:last-child td { border-bottom: none; }
+    .acc-pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.04em; }
+    .pill-admin { background: rgba(99,102,241,0.12); color: #818cf8; }
+    .pill-user  { background: rgba(148,163,184,0.08); color: #64748b; }
+    .pill-off   { background: rgba(239,68,68,0.08); color: #f87171; }
+    .adm-btn {
+      font-size: 11px; padding: 3px 9px; border-radius: 6px; cursor: pointer;
+      font-family: var(--font); font-weight: 600; transition: all 0.18s; border: 1px solid; margin-right: 4px;
+    }
+    .adm-btn-red   { color: #f87171; border-color: rgba(239,68,68,0.2);  background: rgba(239,68,68,0.06); }
+    .adm-btn-red:hover   { background: rgba(239,68,68,0.12); }
+    .adm-btn-green { color: #4ade80; border-color: rgba(74,222,128,0.2); background: rgba(74,222,128,0.06); }
+    .adm-btn-green:hover { background: rgba(74,222,128,0.12); }
+    .adm-btn-blue  { color: #60a5fa; border-color: rgba(96,165,250,0.2); background: rgba(96,165,250,0.06); }
+    .adm-btn-blue:hover  { background: rgba(96,165,250,0.12); }
+    .admin-section { margin-top: 28px; }
+    .admin-section h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #4e4e72; text-transform: uppercase; margin-bottom: 14px; }
+    .admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .admin-form input, .admin-form select {
+      background: rgba(255,255,255,0.035); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px; color: #ddddf0;
+      font-family: var(--font); font-size: 12.5px; outline: none; transition: border-color 0.18s;
+    }
+    .admin-form input:focus, .admin-form select:focus { border-color: rgba(99,102,241,0.35); }
+    .admin-form input::placeholder { color: #2e2e50; }
+    .admin-form select option { background: #0d0d20; }
+    .admin-form-full { grid-column: 1 / -1; }
+    .admin-submit {
+      grid-column: 1 / -1; padding: 9px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none; border-radius: 9px; color: #fff;
+      font-family: var(--font); font-size: 12.5px; font-weight: 700;
+      cursor: pointer; transition: opacity 0.18s; margin-top: 4px;
+    }
+    .admin-submit:hover { opacity: 0.88; }
+    #admin-msg { font-size: 12px; min-height: 16px; margin-top: 10px; text-align: center; }
   </style>
 </head>
 
@@ -610,7 +742,90 @@
       <button id="new-chat-btn">+ New chat</button>
       <button id="clear-btn">clear</button>
     </div>
+
+    <div class="nav-sep" id="nav-user-sep" style="display:none"></div>
+    <div id="nav-user" style="display:none;align-items:center;gap:7px">
+      <span id="nav-username"></span>
+      <button id="admin-btn">admin</button>
+      <button id="logout-btn">logout</button>
+    </div>
   </nav>
+
+  <!-- Usage bar (shown when logged in) -->
+  <div id="usage-bar-wrap">
+    <div id="usage-bar-bg"><div id="usage-bar-fill"></div></div>
+    <div id="usage-label"></div>
+  </div>
+
+  <!-- Login overlay -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <div id="login-form-wrap">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+          <div class="nav-logo-mark">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 12L7 2L12 12M4 8.5H10" stroke="#a5b4fc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Koottam</h2>
+        </div>
+        <p class="login-sub">Sign in to continue</p>
+        <input id="login-user" class="login-field" type="text" placeholder="Username" autocomplete="username" />
+        <input id="login-pass" class="login-field" type="password" placeholder="Password" autocomplete="current-password" />
+        <button id="login-btn" class="login-submit">Sign in</button>
+        <p id="login-err"></p>
+      </div>
+      <div id="login-setup-msg" style="display:none">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:16px">
+          <div class="nav-logo-mark">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <path d="M2 12L7 2L12 12M4 8.5H10" stroke="#a5b4fc" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2>Koottam</h2>
+        </div>
+        <p style="color:#4e4e72;font-size:13px;line-height:1.7">No accounts exist yet. Create the first admin account from your terminal:</p>
+        <code id="login-setup-code">python scripts/manage_accounts.py create-admin</code>
+        <p style="color:#2e2e50;font-size:11.5px;margin-top:4px">Then reload this page.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin modal -->
+  <div id="admin-modal">
+    <div class="admin-card">
+      <h3>
+        Accounts &amp; Usage
+        <button class="admin-close" id="admin-close-btn">✕</button>
+      </h3>
+      <div id="admin-accounts-table-wrap">
+        <table class="acc-table">
+          <thead>
+            <tr>
+              <th>Username</th><th>Role</th><th>Tokens</th><th>Limit</th><th>Window</th><th>Active</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-accounts-body"></tbody>
+        </table>
+      </div>
+      <div id="admin-msg"></div>
+
+      <div class="admin-section">
+        <h4>Add account</h4>
+        <div class="admin-form">
+          <input id="new-acc-user" placeholder="Username" />
+          <input id="new-acc-pass" type="password" placeholder="Password" />
+          <select id="new-acc-role">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+          </select>
+          <input id="new-acc-limit" type="number" placeholder="Token limit" value="5000" min="100" />
+          <input id="new-acc-hours" type="number" placeholder="Reset hours" value="3" min="0.5" step="0.5" />
+          <button class="admin-submit" id="new-acc-btn">Create account</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Messages -->
   <main id="messages">
@@ -688,19 +903,48 @@
   <script>
     const API = 'http://127.0.0.1:8000'
 
-    const $messages = document.getElementById('messages')
-    const $inner    = document.getElementById('chat-inner')
-    const $input    = document.getElementById('input')
-    const $send     = document.getElementById('send-btn')
-    const $model    = document.getElementById('model-sel')
-    const $clear    = document.getElementById('clear-btn')
-    const $newChat  = document.getElementById('new-chat-btn')
-    const $empty    = document.getElementById('empty')
-    const $dot      = document.getElementById('status-dot')
-    const $statusTx = document.getElementById('status-text')
+    // ── Element refs ──────────────────────────────────────────────────────────
+    const $messages  = document.getElementById('messages')
+    const $inner     = document.getElementById('chat-inner')
+    const $input     = document.getElementById('input')
+    const $send      = document.getElementById('send-btn')
+    const $model     = document.getElementById('model-sel')
+    const $clear     = document.getElementById('clear-btn')
+    const $newChat   = document.getElementById('new-chat-btn')
+    const $empty     = document.getElementById('empty')
+    const $dot       = document.getElementById('status-dot')
+    const $statusTx  = document.getElementById('status-text')
+    const $navUser   = document.getElementById('nav-user')
+    const $navUserSp = document.getElementById('nav-user-sep')
+    const $navUname  = document.getElementById('nav-username')
+    const $logoutBtn = document.getElementById('logout-btn')
+    const $adminBtn  = document.getElementById('admin-btn')
+    const $adminModal= document.getElementById('admin-modal')
+    const $adminClose= document.getElementById('admin-close-btn')
+    const $adminBody = document.getElementById('admin-accounts-body')
+    const $adminMsg  = document.getElementById('admin-msg')
+    const $loginOv   = document.getElementById('login-overlay')
+    const $loginFW   = document.getElementById('login-form-wrap')
+    const $loginSetup= document.getElementById('login-setup-msg')
+    const $loginUser = document.getElementById('login-user')
+    const $loginPass = document.getElementById('login-pass')
+    const $loginBtn  = document.getElementById('login-btn')
+    const $loginErr  = document.getElementById('login-err')
+    const $usageWrap = document.getElementById('usage-bar-wrap')
+    const $usageFill = document.getElementById('usage-bar-fill')
+    const $usageLbl  = document.getElementById('usage-label')
 
+    // ── Auth state ────────────────────────────────────────────────────────────
+    const AUTH = {
+      token:    localStorage.getItem('koottam_token'),
+      username: localStorage.getItem('koottam_username'),
+      role:     localStorage.getItem('koottam_role'),
+    }
+
+    // ── Chat state ────────────────────────────────────────────────────────────
     let busy      = false
-    let sessionId = null  // echoed back on every /chat; reused within one browser session
+    let sessionId = null
+    let isNewChat = false
 
     const AGENT_COLORS = {
       'Assistant':  { text:'#94a3b8', bg:'rgba(148,163,184,0.07)',  bd:'rgba(148,163,184,0.14)' },
@@ -714,28 +958,258 @@
       'System':      { text:'#6b7280', bg:'rgba(107,114,128,0.055)', bd:'rgba(107,114,128,0.14)' },
     }
 
-    // GSAP setup
+    // ── GSAP ──────────────────────────────────────────────────────────────────
     gsap.registerPlugin(ScrollTrigger)
-
-    gsap.to('#nav-pill', {
-      opacity: 1, y: 0, duration: 0.65, delay: 0.15, ease: 'power3.out',
-    })
-
+    gsap.to('#nav-pill', { opacity: 1, y: 0, duration: 0.65, delay: 0.15, ease: 'power3.out' })
     gsap.timeline({ delay: 0.32 })
-      .to('#empty-icon',     { opacity: 1, scale: 1,  duration: 0.55, ease: 'back.out(1.8)' })
-      .to('#empty-headline', { opacity: 1, y: 0,      duration: 0.5,  ease: 'power3.out' }, '-=0.22')
-      .to('#empty-sub',      { opacity: 1, y: 0,      duration: 0.42, ease: 'power3.out' }, '-=0.3')
-      .to('#empty-chips',    { opacity: 1, y: 0,      duration: 0.38, ease: 'power3.out' }, '-=0.24')
-      .to('#empty-marquee',  { opacity: 1,            duration: 0.55, ease: 'power2.out' }, '-=0.15')
+      .to('#empty-icon',     { opacity: 1, scale: 1, duration: 0.55, ease: 'back.out(1.8)' })
+      .to('#empty-headline', { opacity: 1, y: 0,     duration: 0.5,  ease: 'power3.out' }, '-=0.22')
+      .to('#empty-sub',      { opacity: 1, y: 0,     duration: 0.42, ease: 'power3.out' }, '-=0.3')
+      .to('#empty-chips',    { opacity: 1, y: 0,     duration: 0.38, ease: 'power3.out' }, '-=0.24')
+      .to('#empty-marquee',  { opacity: 1,           duration: 0.55, ease: 'power2.out' }, '-=0.15')
 
-    // Boot
+    // ── apiFetch — adds auth header, handles 401 ──────────────────────────────
+    async function apiFetch(path, options = {}) {
+      const opts = {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(AUTH.token ? { 'Authorization': `Bearer ${AUTH.token}` } : {}),
+          ...(options.headers || {}),
+        },
+      }
+      const res = await fetch(`${API}${path}`, opts)
+      if (res.status === 401) {
+        showLogin('Session expired — please sign in again.')
+        throw new Error('Unauthenticated')
+      }
+      return res
+    }
+
+    // ── Login / logout ────────────────────────────────────────────────────────
+    function showLogin(msg) {
+      $loginErr.textContent = msg || ''
+      $loginOv.style.display = 'flex'
+      setTimeout(() => $loginUser.focus(), 80)
+    }
+
+    function hideLogin() { $loginOv.style.display = 'none' }
+
+    async function doLogin() {
+      const username = $loginUser.value.trim()
+      const password = $loginPass.value
+      if (!username || !password) { $loginErr.textContent = 'Enter username and password.'; return }
+      $loginBtn.disabled = true
+      $loginErr.textContent = ''
+      try {
+        const res = await fetch(`${API}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        })
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}))
+          $loginErr.textContent = d.detail || 'Invalid credentials.'
+          return
+        }
+        const d = await res.json()
+        AUTH.token = d.token; AUTH.username = d.username; AUTH.role = d.role
+        localStorage.setItem('koottam_token',    d.token)
+        localStorage.setItem('koottam_username', d.username)
+        localStorage.setItem('koottam_role',     d.role)
+        hideLogin()
+        onAuthReady()
+        loadAppSettings()
+      } catch {
+        $loginErr.textContent = 'Connection error.'
+      } finally {
+        $loginBtn.disabled = false
+      }
+    }
+
+    async function doLogout() {
+      await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {})
+      AUTH.token = AUTH.username = AUTH.role = null
+      localStorage.removeItem('koottam_token')
+      localStorage.removeItem('koottam_username')
+      localStorage.removeItem('koottam_role')
+      $navUser.style.display = 'none'
+      $navUserSp.style.display = 'none'
+      $usageWrap.style.display = 'none'
+      showLogin()
+    }
+
+    // ── Usage bar ─────────────────────────────────────────────────────────────
+    function updateUsageBar(used, limit) {
+      if (!limit) { $usageWrap.style.display = 'none'; return }
+      const pct = Math.min(100, Math.round((used / limit) * 100))
+      const color = pct > 85 ? '#ef4444' : pct > 60 ? '#f59e0b' : '#6366f1'
+      $usageFill.style.width = pct + '%'
+      $usageFill.style.background = color
+      $usageLbl.textContent = `${used.toLocaleString()} / ${limit.toLocaleString()} tok`
+      $usageWrap.style.display = 'block'
+    }
+
+    async function refreshUsage() {
+      try {
+        const r = await apiFetch('/auth/me')
+        if (!r.ok) return
+        const d = await r.json()
+        if (d.authenticated) updateUsageBar(d.tokens_used || 0, d.token_limit || 0)
+      } catch {}
+    }
+
+    // ── Reveal app after auth ─────────────────────────────────────────────────
+    function onAuthReady() {
+      $navUname.textContent = AUTH.username || ''
+      $navUser.style.display = 'flex'
+      $navUserSp.style.display = 'block'
+      $adminBtn.style.display = AUTH.role === 'admin' ? 'inline-block' : 'none'
+      refreshUsage()
+    }
+
+    // ── Admin panel ───────────────────────────────────────────────────────────
+    async function openAdmin() {
+      $adminModal.style.display = 'flex'
+      await loadAdminAccounts()
+    }
+
+    function closeAdmin() { $adminModal.style.display = 'none' }
+
+    async function loadAdminAccounts() {
+      $adminBody.innerHTML = '<tr><td colspan="7" style="color:#2e2e50;padding:16px 10px">Loading…</td></tr>'
+      try {
+        const r = await apiFetch('/admin/accounts')
+        if (!r.ok) { $adminBody.innerHTML = '<tr><td colspan="7" style="color:#f87171">Failed to load.</td></tr>'; return }
+        const d = await r.json()
+        const accounts = d.accounts || []
+        if (!accounts.length) {
+          $adminBody.innerHTML = '<tr><td colspan="7" style="color:#2e2e50;padding:16px 10px">No accounts yet.</td></tr>'
+          return
+        }
+        $adminBody.innerHTML = accounts.map(a => {
+          const rolePill = a.role === 'admin'
+            ? `<span class="acc-pill pill-admin">admin</span>`
+            : `<span class="acc-pill pill-user">user</span>`
+          const activePill = a.is_active
+            ? `<span class="acc-pill pill-user" style="color:#4ade80">on</span>`
+            : `<span class="acc-pill pill-off">off</span>`
+          const pct = a.token_limit ? Math.round((a.tokens_used / a.token_limit) * 100) : 0
+          const tokenColor = pct > 85 ? '#ef4444' : pct > 60 ? '#f59e0b' : '#c0c0e0'
+          return `<tr>
+            <td style="font-weight:600;color:#e8e8f8">${esc(a.username)}</td>
+            <td>${rolePill}</td>
+            <td style="color:${tokenColor}">${a.tokens_used.toLocaleString()}</td>
+            <td>${a.token_limit.toLocaleString()}</td>
+            <td style="color:#4e4e72">${a.reset_hours}h</td>
+            <td>${activePill}</td>
+            <td>
+              <button class="adm-btn ${a.is_active ? 'adm-btn-red' : 'adm-btn-green'}"
+                onclick="adminToggle(${a.id}, ${a.is_active ? 0 : 1})">${a.is_active ? 'disable' : 'enable'}</button>
+              <button class="adm-btn adm-btn-blue"
+                onclick="adminResetUsage(${a.id})">reset tok</button>
+            </td>
+          </tr>`
+        }).join('')
+      } catch { $adminBody.innerHTML = '<tr><td colspan="7" style="color:#f87171">Error.</td></tr>' }
+    }
+
+    async function adminToggle(id, newState) {
+      await apiFetch(`/admin/accounts/${id}`, {
+        method: 'PUT', body: JSON.stringify({ is_active: newState }),
+      }).catch(() => {})
+      await loadAdminAccounts()
+    }
+
+    async function adminResetUsage(id) {
+      await apiFetch(`/admin/accounts/${id}/reset-usage`, { method: 'POST' }).catch(() => {})
+      await loadAdminAccounts()
+    }
+
+    async function createAccount() {
+      const username = document.getElementById('new-acc-user').value.trim()
+      const password = document.getElementById('new-acc-pass').value
+      const role     = document.getElementById('new-acc-role').value
+      const limit    = parseInt(document.getElementById('new-acc-limit').value) || 5000
+      const hours    = parseFloat(document.getElementById('new-acc-hours').value) || 3
+      if (!username || !password) { setAdminMsg('Username and password are required.', false); return }
+      try {
+        const r = await apiFetch('/admin/accounts', {
+          method: 'POST',
+          body: JSON.stringify({ username, password, role, token_limit: limit, reset_hours: hours }),
+        })
+        const d = await r.json()
+        if (r.ok) {
+          setAdminMsg(`Account '${username}' created.`, true)
+          document.getElementById('new-acc-user').value = ''
+          document.getElementById('new-acc-pass').value = ''
+          await loadAdminAccounts()
+        } else {
+          setAdminMsg(d.detail || 'Failed to create account.', false)
+        }
+      } catch { setAdminMsg('Connection error.', false) }
+    }
+
+    function setAdminMsg(msg, ok) {
+      $adminMsg.textContent = msg
+      $adminMsg.style.color = ok ? '#4ade80' : '#f87171'
+      setTimeout(() => { $adminMsg.textContent = '' }, 3500)
+    }
+
+    $adminBtn.addEventListener('click', openAdmin)
+    $adminClose.addEventListener('click', closeAdmin)
+    $adminModal.addEventListener('click', e => { if (e.target === $adminModal) closeAdmin() })
+    document.getElementById('new-acc-btn').addEventListener('click', createAccount)
+
+    // ── App boot ──────────────────────────────────────────────────────────────
     ;(async () => {
+      // Check auth status first
+      try {
+        const sr = await fetch(`${API}/auth/status`)
+        if (sr.ok) {
+          const sd = await sr.json()
+          if (sd.needs_setup) {
+            // No accounts yet: show setup instructions, let app run in bootstrap mode
+            $loginFW.style.display = 'none'
+            $loginSetup.style.display = 'block'
+            $loginOv.style.display = 'flex'
+            // Don't block — load settings and continue in bootstrap mode
+          } else if (!AUTH.token) {
+            showLogin()
+            return  // halt until login
+          } else {
+            // Validate stored token
+            const mr = await fetch(`${API}/auth/me`, {
+              headers: { 'Authorization': `Bearer ${AUTH.token}` }
+            })
+            if (mr.ok) {
+              const md = await mr.json()
+              if (md.authenticated) {
+                AUTH.username = md.username
+                AUTH.role     = md.role
+                localStorage.setItem('koottam_username', md.username)
+                localStorage.setItem('koottam_role',     md.role)
+                updateUsageBar(md.tokens_used || 0, md.token_limit || 0)
+                onAuthReady()
+              } else {
+                showLogin(); return
+              }
+            } else {
+              showLogin(); return
+            }
+          }
+        }
+      } catch { /* server offline — will show in status */ }
+
+      loadAppSettings()
+    })()
+
+    async function loadAppSettings() {
       try {
         const r = await fetch(`${API}/`)
-        const ok = r.ok
-        $dot.style.background = ok ? '#22c55e' : '#ef4444'
-        $statusTx.textContent = ok ? 'online' : 'error'
-        $statusTx.style.color = ok ? '#22c55e' : '#f87171'
+        $dot.style.background = r.ok ? '#22c55e' : '#ef4444'
+        $statusTx.textContent = r.ok ? 'online' : 'error'
+        $statusTx.style.color = r.ok ? '#22c55e' : '#f87171'
       } catch {
         $dot.style.background = '#ef4444'
         $statusTx.textContent = 'offline'
@@ -746,41 +1220,36 @@
         const d = await r.json()
         $model.value = d.settings?.model || 'groq'
       } catch {}
-    })()
+    }
 
+    // ── Event: login form ────────────────────────────────────────────────────
+    $loginBtn.addEventListener('click', doLogin)
+    $loginPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin() })
+    $loginUser.addEventListener('keydown', e => { if (e.key === 'Enter') $loginPass.focus() })
+    $logoutBtn.addEventListener('click', doLogout)
+
+    // ── Event: settings ───────────────────────────────────────────────────────
     $model.addEventListener('change', () => {
-      fetch(`${API}/settings`, {
+      apiFetch('/settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: $model.value }),
       }).catch(() => {})
     })
 
-    function resetUI() {
-      ;[...$inner.children].forEach(c => { if (c !== $empty) c.remove() })
-      $empty.style.display = 'flex'
-      gsap.fromTo('#empty-icon', { scale: 0.82 }, { scale: 1, duration: 0.45, ease: 'back.out(1.7)' })
-      gsap.fromTo(
-        ['#empty-headline','#empty-sub','#empty-chips','#empty-marquee'],
-        { opacity: 0, y: 10 },
-        { opacity: 1, y: 0, stagger: 0.07, duration: 0.38, ease: 'power3.out' }
-      )
-      gsap.to('#empty-icon', { opacity: 1, duration: 0.3 })
-    }
-
-    // New Chat — fresh session_id, clean UI, history preserved in DB
+    // ── Event: new chat / clear ────────────────────────────────────────────────
     $newChat.addEventListener('click', () => {
       sessionId = null
+      isNewChat = true
       resetUI()
     })
 
-    // Clear — wipes the entire DB + fresh session
     $clear.addEventListener('click', async () => {
       await fetch(`${API}/memory/clear`, { method: 'POST' }).catch(() => {})
       sessionId = null
       resetUI()
     })
 
+    // ── Event: copy code ──────────────────────────────────────────────────────
     $inner.addEventListener('click', e => {
       const btn = e.target.closest('.copy-btn')
       if (!btn) return
@@ -792,16 +1261,14 @@
       })
     })
 
-    function useChip(el) {
-      $input.value = el.textContent.trim()
-      $input.focus()
-    }
+    function useChip(el) { $input.value = el.textContent.trim(); $input.focus() }
 
     $input.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
     })
     $send.addEventListener('click', send)
 
+    // ── Send ──────────────────────────────────────────────────────────────────
     async function send() {
       const text = $input.value.trim()
       if (!text || busy) return
@@ -811,22 +1278,42 @@
       const tid = addTyping()
       setBusy(true)
       try {
-        const res = await fetch(`${API}/chat`, {
+        const res = await apiFetch('/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, model: $model.value, session_id: sessionId }),
+          body: JSON.stringify({ message: text, model: $model.value, session_id: sessionId, new_chat: isNewChat }),
         })
+        if (res.status === 429) {
+          const d = await res.json().catch(() => ({}))
+          removeEl(tid)
+          addSystemError('⚠️ ' + (d.detail || 'Usage limit reached. Try again later.'))
+          return
+        }
         if (!res.ok) throw new Error(`Server error ${res.status}`)
         const data = await res.json()
-        sessionId = data.session_id || sessionId  // pin to this session for the tab lifetime
+        sessionId = data.session_id || sessionId
+        isNewChat = false
         removeEl(tid)
         addResponse(data)
+        refreshUsage()  // update token bar after each message
       } catch (err) {
-        removeEl(tid)
-        addSystemError(err.message)
+        if (err.message !== 'Unauthenticated') {
+          removeEl(tid)
+          addSystemError(err.message)
+        }
       } finally {
         setBusy(false)
       }
+    }
+
+    function resetUI() {
+      ;[...$inner.children].forEach(c => { if (c !== $empty) c.remove() })
+      $empty.style.display = 'flex'
+      gsap.fromTo('#empty-icon', { scale: 0.82 }, { scale: 1, duration: 0.45, ease: 'back.out(1.7)' })
+      gsap.fromTo(
+        ['#empty-headline','#empty-sub','#empty-chips','#empty-marquee'],
+        { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.07, duration: 0.38, ease: 'power3.out' }
+      )
+      gsap.to('#empty-icon', { opacity: 1, duration: 0.3 })
     }
 
     function addUser(text) {
@@ -835,10 +1322,7 @@
       bubble.textContent = text
       wrap.appendChild(bubble)
       append(wrap)
-      gsap.fromTo(bubble,
-        { opacity: 0, x: 8, scale: 0.97 },
-        { opacity: 1, x: 0, scale: 1, duration: 0.28, ease: 'power3.out' }
-      )
+      gsap.fromTo(bubble, { opacity: 0, x: 8, scale: 0.97 }, { opacity: 1, x: 0, scale: 1, duration: 0.28, ease: 'power3.out' })
     }
 
     function addResponse(data) {
@@ -851,23 +1335,16 @@
         const name = msg.agent   || 'Agent'
         const text = msg.content || ''
         const c    = AGENT_COLORS[name] || AGENT_COLORS['Assistant']
-
-        const row = mkdiv('agent-row', 'margin-bottom:8px')
-
+        const row  = mkdiv('agent-row', 'margin-bottom:8px')
         const labelCol = mkdiv('agent-label-col')
         const badge = mkdiv('agent-badge')
         badge.textContent = name
         badge.style.cssText = `color:${c.text};background:${c.bg};border-color:${c.bd}`
         labelCol.appendChild(badge)
-
         const content = mkdiv('agent-content prose-inline')
         content.innerHTML = renderMarkdown(text)
-
-        content.addEventListener('mouseenter', () =>
-          gsap.to(content, { y: -2, duration: 0.2, ease: 'power2.out' }))
-        content.addEventListener('mouseleave', () =>
-          gsap.to(content, { y: 0, duration: 0.3, ease: 'power2.inOut' }))
-
+        content.addEventListener('mouseenter', () => gsap.to(content, { y: -2, duration: 0.2, ease: 'power2.out' }))
+        content.addEventListener('mouseleave', () => gsap.to(content, { y: 0, duration: 0.3, ease: 'power2.inOut' }))
         row.appendChild(labelCol)
         row.appendChild(content)
         group.appendChild(row)
@@ -876,24 +1353,16 @@
       if (metrics.total_time_seconds != null) {
         const tok = metrics.total_tokens != null
           ? `<span class="metric-sep">·</span><span class="metric-val">${metrics.total_tokens.toLocaleString()} tok</span>` : ''
-        const rt = route
-          ? `<span class="metric-sep">·</span><span class="metric-route">${route}</span>` : ''
+        const rt = route ? `<span class="metric-sep">·</span><span class="metric-route">${route}</span>` : ''
         const m = mkdiv('metrics-row')
         m.innerHTML = `<span class="metric-val">${metrics.total_time_seconds}s</span>
-          <span class="metric-sep">·</span>
-          <span class="metric-val">${metrics.api_calls} calls</span>
-          ${tok}${rt}`
+          <span class="metric-sep">·</span><span class="metric-val">${metrics.api_calls} calls</span>${tok}${rt}`
         group.appendChild(m)
       }
 
       append(group)
-
-      const rows = group.querySelectorAll('.agent-row')
-      gsap.fromTo(rows,
-        { opacity: 0, y: 14, scale: 0.97 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.34, ease: 'power3.out', stagger: 0.1 }
-      )
-
+      gsap.fromTo(group.querySelectorAll('.agent-row'),
+        { opacity: 0, y: 14, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.34, ease: 'power3.out', stagger: 0.1 })
       group.querySelectorAll('pre code').forEach(b => {
         if (!b.classList.length) b.classList.add('nohighlight')
         hljs.highlightElement(b)
@@ -904,16 +1373,13 @@
       const id = 'ty-' + Date.now()
       const row = mkdiv('agent-row', 'margin-bottom:16px')
       row.id = id
-
       const labelCol = mkdiv('agent-label-col')
       const badge = mkdiv('agent-badge')
       badge.textContent = '···'
       badge.style.cssText = 'color:#2e2e50;background:rgba(255,255,255,0.015);border-color:rgba(255,255,255,0.05)'
       labelCol.appendChild(badge)
-
       const dots = mkdiv('', 'display:flex;align-items:center;gap:5px;padding:12px 16px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);border-radius:5px 16px 16px 16px')
       dots.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>'
-
       row.appendChild(labelCol)
       row.appendChild(dots)
       append(row)
@@ -946,26 +1412,17 @@
         last = m.index + m[0].length
       }
       if (last < raw.length) parts.push({ t: 'text', v: raw.slice(last) })
-
       return parts.map(p => {
         if (p.t === 'code') {
           const cls = p.lang ? `language-${p.lang}` : 'nohighlight'
-          return `<div class="code-wrap">
-            <div class="code-header">
-              <span class="code-lang-tag">${p.lang || 'code'}</span>
-              <button class="copy-btn">Copy</button>
-            </div>
-            <pre><code class="${cls}">${esc(p.v)}</code></pre>
-          </div>`
+          return `<div class="code-wrap"><div class="code-header"><span class="code-lang-tag">${p.lang || 'code'}</span><button class="copy-btn">Copy</button></div><pre><code class="${cls}">${esc(p.v)}</code></pre></div>`
         }
         let s = esc(p.v)
         s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>')
         s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
         if (/^\d+\.\s/m.test(s)) {
           s = s.replace(/((?:\d+\. [^\n]+\n?)+)/g, match => {
-            const items = match.trim().split(/\n/).map(li =>
-              `<li>${li.replace(/^\d+\.\s*/, '')}</li>`
-            ).join('')
+            const items = match.trim().split(/\n/).map(li => `<li>${li.replace(/^\d+\.\s*/, '')}</li>`).join('')
             return `<ol>${items}</ol>`
           })
         }
@@ -975,9 +1432,7 @@
     }
 
     function esc(s) {
-      return String(s)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
     }
 
     function mkdiv(cls, inlineStyle) {
@@ -987,19 +1442,9 @@
       return d
     }
 
-    function append(el) {
-      $inner.appendChild(el)
-      $messages.scrollTop = $messages.scrollHeight
-    }
-
+    function append(el) { $inner.appendChild(el); $messages.scrollTop = $messages.scrollHeight }
     function removeEl(id) { document.getElementById(id)?.remove() }
-
-    function setBusy(v) {
-      busy = v
-      $send.disabled = v
-      $input.disabled = v
-      if (!v) $input.focus()
-    }
+    function setBusy(v) { busy = v; $send.disabled = v; $input.disabled = v; if (!v) $input.focus() }
   </script>
 </body>
 </html>

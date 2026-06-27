@@ -62,7 +62,7 @@ class Settings:
 
     # ----- Claude API (paid alternative) -----
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
-    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-opus-4-8")
+    CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-6")
 
     # ----- Groq API (fast hosted Llama, OpenAI-compatible) -----
     # Reads GROQ_API (your key name) and falls back to GROQ_API_KEY.
