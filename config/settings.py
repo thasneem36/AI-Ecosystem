@@ -73,6 +73,13 @@ class Settings:
     #      For an even faster/cheaper option use "llama-3.1-8b-instant".
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
+    # ----- Rate limiting (burst cap, separate from the token budget) -----
+    # Max requests a single user may make within the window.
+    # Set RATE_LIMIT_ADMIN_EXEMPT=false in .env to rate-limit admins too.
+    RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", "20"))
+    RATE_LIMIT_WINDOW: int = int(os.getenv("RATE_LIMIT_WINDOW", "60"))   # seconds
+    RATE_LIMIT_ADMIN_EXEMPT: bool = _get_bool("RATE_LIMIT_ADMIN_EXEMPT", True)
+
     # ----- Paths -----
     BASE_DIR: Path = BASE_DIR
     OUTPUT_DIR: Path = BASE_DIR / "output"

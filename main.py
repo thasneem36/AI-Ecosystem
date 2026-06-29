@@ -36,4 +36,8 @@ if __name__ == "__main__":
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.RELOAD,
+        # Watch only real source dirs; output/ writes (coding agent, simulator)
+        # must not trigger the reloader.
+        reload_dirs=["agents", "api", "tools", "config", "memory", "auth"],
+        reload_excludes=["output/*", "output/tmp*.py", "output/solution_*.py"],
     )

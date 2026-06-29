@@ -25,6 +25,7 @@
       --text:    #ddddf0;
       --muted:   #4e4e72;
       --indigo:  #6366f1;
+      --sidebar-w: 224px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -69,6 +70,119 @@
     ::-webkit-scrollbar { width: 3px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 2px; }
+
+    /* ── App layout: sidebar + chat area ── */
+    #app-layout {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: none;          /* shown after login */
+      flex-direction: column;
+      background: rgba(7,7,17,0.94);
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+      padding-top: 50px;      /* clear the fixed nav pill */
+      z-index: 2;
+    }
+
+    #sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px 9px;
+      border-bottom: 1px solid var(--border2);
+      flex-shrink: 0;
+    }
+
+    .sidebar-label {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #5a5a88;
+    }
+
+    #sidebar-new-btn {
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      color: #6366f1;
+      font-size: 10.5px;
+      font-family: var(--font);
+      font-weight: 700;
+      border-radius: 7px;
+      padding: 4px 9px;
+      cursor: pointer;
+      transition: all 0.18s;
+      letter-spacing: 0.02em;
+    }
+    #sidebar-new-btn:hover {
+      background: rgba(99,102,241,0.15);
+      color: #a5b4fc;
+      border-color: rgba(99,102,241,0.38);
+    }
+
+    #sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 5px 0 16px;
+    }
+
+    .convo-item {
+      padding: 8px 14px 7px;
+      cursor: pointer;
+      transition: background 0.14s;
+      border-left: 2px solid transparent;
+      position: relative;
+    }
+    .convo-item:hover  { background: rgba(255,255,255,0.026); }
+    .convo-item.active {
+      background: rgba(99,102,241,0.065);
+      border-left-color: rgba(99,102,241,0.42);
+    }
+
+    .convo-title {
+      font-size: 12px;
+      color: #8484b8;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.45;
+      transition: color 0.14s;
+    }
+    .convo-item:hover  .convo-title { color: #a0a0d0; }
+    .convo-item.active .convo-title { color: #c0c0e4; }
+
+    .convo-time {
+      font-size: 10px;
+      color: #484870;
+      margin-top: 2px;
+      letter-spacing: 0.01em;
+    }
+
+    .sidebar-empty {
+      padding: 20px 14px;
+      font-size: 11.5px;
+      color: #484870;
+      line-height: 1.6;
+    }
+
+    /* ── Chat area ── */
+    #chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
 
     /* Floating nav pill */
     #nav-pill {
@@ -125,7 +239,7 @@
     #status-text {
       font-size: 11px;
       font-weight: 500;
-      color: #2e2e50;
+      color: #525278;
       letter-spacing: 0.02em;
       transition: color 0.4s;
     }
@@ -173,7 +287,7 @@
     #clear-btn {
       background: transparent;
       border: 1px solid rgba(255,255,255,0.055);
-      color: #2e2e50;
+      color: #525278;
       font-size: 11.5px;
       font-family: var(--font);
       font-weight: 600;
@@ -312,7 +426,7 @@
       font-size: 11.5px;
       font-weight: 600;
       white-space: nowrap;
-      color: #2e2e50;
+      color: #484870;
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
@@ -371,13 +485,13 @@
     .agent-content {
       flex: 1;
       min-width: 0;
-      background: rgba(255,255,255,0.018);
-      border: 1px solid rgba(255,255,255,0.048);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 5px 17px 17px 17px;
-      padding: 13px 17px;
-      font-size: 13.5px;
-      line-height: 1.72;
-      color: #c0c0de;
+      padding: 14px 18px;
+      font-size: 14px;
+      line-height: 1.75;
+      color: #d0d0ee;
       transition: transform 0.22s ease, box-shadow 0.22s ease;
       cursor: default;
     }
@@ -401,7 +515,7 @@
 
     .code-lang-tag {
       font-size: 10.5px;
-      color: #3a3a60;
+      color: #6868a8;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -410,7 +524,7 @@
     .copy-btn {
       background: transparent;
       border: 1px solid rgba(255,255,255,0.09);
-      color: #3a3a60;
+      color: #6060a0;
       font-size: 10.5px;
       font-family: var(--font);
       font-weight: 600;
@@ -442,17 +556,20 @@
     /* Prose */
     .prose-inline code {
       background: rgba(99,102,241,0.1);
-      border: 1px solid rgba(99,102,241,0.14);
+      border: 1px solid rgba(99,102,241,0.18);
       border-radius: 4px;
       padding: 1px 6px;
-      font-size: 12px;
+      font-size: 12.5px;
       color: #a5a8fc;
       font-family: 'SF Mono', 'Cascadia Code', monospace;
     }
-    .prose-inline strong { color: #e0e0f8; font-weight: 600; }
-    .prose-inline ol { list-style: decimal; padding-left: 18px; margin: 8px 0; }
-    .prose-inline li { color: #a8a8cc; font-size: 13.5px; line-height: 1.7; margin: 4px 0; }
-    .prose-inline p { margin: 3px 0; }
+    .prose-inline strong { color: #e8e8ff; font-weight: 600; }
+    .prose-inline ol { list-style: decimal; padding-left: 20px; margin: 10px 0; }
+    .prose-inline ul { list-style: disc; padding-left: 20px; margin: 10px 0; }
+    .prose-inline li { color: #b8b8d8; font-size: 14px; line-height: 1.75; margin: 5px 0; }
+    .prose-inline p { margin: 7px 0; }
+    .prose-inline p:first-child { margin-top: 0; }
+    .prose-inline p:last-child  { margin-bottom: 0; }
 
     /* Metrics */
     .metrics-row {
@@ -460,14 +577,14 @@
       align-items: center;
       gap: 7px;
       padding-left: 96px;
-      margin-top: 5px;
+      margin-top: 6px;
     }
-    .metric-val  { font-size: 10px; color: #222038; font-weight: 500; letter-spacing: 0.025em; }
-    .metric-sep  { font-size: 9px; color: #181825; }
+    .metric-val  { font-size: 10.5px; color: #525278; font-weight: 500; letter-spacing: 0.025em; }
+    .metric-sep  { font-size: 9px; color: #3a3a60; }
     .metric-route {
       font-size: 10px; font-weight: 700;
       letter-spacing: 0.06em; text-transform: uppercase;
-      color: rgba(99,102,241,0.32);
+      color: rgba(99,102,241,0.65);
     }
 
     /* Typing dots */
@@ -542,7 +659,7 @@
       overflow-y: auto;
       padding: 0;
     }
-    #input::placeholder { color: #242438; }
+    #input::placeholder { color: #42425e; }
 
     #send-btn {
       background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
@@ -571,7 +688,7 @@
     .input-hint {
       text-align: center;
       font-size: 10px;
-      color: #141420;
+      color: #404060;
       margin-top: 9px;
       letter-spacing: 0.025em;
     }
@@ -603,7 +720,7 @@
       outline: none; margin-bottom: 10px; transition: border-color 0.18s;
     }
     .login-field:focus { border-color: rgba(99,102,241,0.45); }
-    .login-field::placeholder { color: #2e2e50; }
+    .login-field::placeholder { color: #42425e; }
     .login-submit {
       display: block; width: 100%; padding: 11px;
       background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -626,15 +743,15 @@
       position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
       width: 300px; z-index: 190; display: none;
     }
-    #usage-bar-bg { height: 2px; background: rgba(255,255,255,0.05); border-radius: 1px; overflow: hidden; }
+    #usage-bar-bg { height: 2px; background: rgba(255,255,255,0.07); border-radius: 1px; overflow: hidden; }
     #usage-bar-fill { height: 100%; width: 0%; background: #6366f1; border-radius: 1px; transition: width 0.5s ease, background 0.3s; }
-    #usage-label { font-size: 9.5px; color: #2e2e50; text-align: center; margin-top: 3px; letter-spacing: 0.03em; }
+    #usage-label { font-size: 9.5px; color: #545480; text-align: center; margin-top: 3px; letter-spacing: 0.03em; }
 
     /* ── Nav user badge ── */
     #nav-username { font-size: 11.5px; font-weight: 600; color: #7577f4; letter-spacing: 0.02em; }
     #logout-btn {
       background: transparent; border: 1px solid rgba(255,255,255,0.055);
-      color: #2e2e50; font-size: 11px; font-family: var(--font); font-weight: 600;
+      color: #525278; font-size: 11px; font-family: var(--font); font-weight: 600;
       border-radius: 7px; padding: 4px 9px; cursor: pointer; transition: all 0.18s;
     }
     #logout-btn:hover { border-color: rgba(239,68,68,0.28); color: #f87171; }
@@ -662,13 +779,13 @@
       margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
     }
     .admin-close {
-      background: none; border: none; color: #2e2e50; font-size: 20px;
+      background: none; border: none; color: #525278; font-size: 20px;
       cursor: pointer; line-height: 1; padding: 2px 6px;
     }
     .admin-close:hover { color: #f87171; }
     .acc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     .acc-table th {
-      color: #2e2e50; font-weight: 700; letter-spacing: 0.05em; font-size: 10px;
+      color: #545480; font-weight: 700; letter-spacing: 0.05em; font-size: 10px;
       text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left;
     }
     .acc-table td { padding: 10px 10px; border-bottom: 1px solid var(--border2); color: #c0c0e0; vertical-align: middle; }
@@ -687,6 +804,8 @@
     .adm-btn-green:hover { background: rgba(74,222,128,0.12); }
     .adm-btn-blue  { color: #60a5fa; border-color: rgba(96,165,250,0.2); background: rgba(96,165,250,0.06); }
     .adm-btn-blue:hover  { background: rgba(96,165,250,0.12); }
+    .adm-btn-purple { color: #c084fc; border-color: rgba(192,132,252,0.28); background: rgba(192,132,252,0.06); }
+    .adm-btn-purple:hover { background: rgba(192,132,252,0.14); border-color: rgba(192,132,252,0.5); }
     .admin-section { margin-top: 28px; }
     .admin-section h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #4e4e72; text-transform: uppercase; margin-bottom: 14px; }
     .admin-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -696,7 +815,7 @@
       font-family: var(--font); font-size: 12.5px; outline: none; transition: border-color 0.18s;
     }
     .admin-form input:focus, .admin-form select:focus { border-color: rgba(99,102,241,0.35); }
-    .admin-form input::placeholder { color: #2e2e50; }
+    .admin-form input::placeholder { color: #42425e; }
     .admin-form select option { background: #0d0d20; }
     .admin-form-full { grid-column: 1 / -1; }
     .admin-submit {
@@ -708,6 +827,238 @@
     }
     .admin-submit:hover { opacity: 0.88; }
     #admin-msg { font-size: 12px; min-height: 16px; margin-top: 10px; text-align: center; }
+
+    /* ── Admin tabs ── */
+    .admin-tabs { display: flex; gap: 4px; margin-bottom: 22px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+    .admin-tab {
+      background: none; border: none; border-bottom: 2px solid transparent;
+      color: #4e4e72; font-family: var(--font); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase; padding: 8px 16px 10px;
+      cursor: pointer; transition: all 0.18s; margin-bottom: -1px;
+    }
+    .admin-tab.active { color: #a5b4fc; border-bottom-color: #6366f1; }
+    .admin-tab:hover:not(.active) { color: #9898c8; }
+    .admin-tab-panel { display: none; }
+    .admin-tab-panel.active { display: block; }
+
+    /* ── API status panel ── */
+    .api-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .api-table th {
+      color: #545480; font-weight: 700; letter-spacing: 0.05em; font-size: 10px;
+      text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .api-table td { padding: 10px 10px; border-bottom: 1px solid var(--border2); color: #c0c0e0; vertical-align: middle; }
+    .api-table tr:last-child td { border-bottom: none; }
+    .api-table tr { cursor: pointer; transition: background 0.12s; }
+    .api-table tr:hover { background: rgba(255,255,255,0.022); }
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: middle;
+    }
+    .dot-working { background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.5); }
+    .dot-failed  { background: #f87171; box-shadow: 0 0 6px rgba(248,113,113,0.5); }
+    .dot-untested { background: #4e4e72; }
+    .api-add-row { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    .api-add-btn {
+      background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+      color: #a5b4fc; font-family: var(--font); font-size: 12px; font-weight: 700;
+      border-radius: 8px; padding: 5px 13px; cursor: pointer; transition: all 0.18s;
+    }
+    .api-add-btn:hover { background: rgba(99,102,241,0.2); }
+    /* Add API form */
+    #api-add-form { display: none; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; background: rgba(255,255,255,0.018); }
+    #api-add-form.open { display: block; }
+    #api-add-form .admin-form { grid-template-columns: 1fr 1fr; }
+    /* Model picker */
+    #api-model-picker { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border2); display: none; }
+    #api-model-picker.open { display: block; }
+    #api-model-picker select, #api-model-picker input { width: 100%; }
+    .api-detect-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+    .api-detect-badge.groq      { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.25); }
+    .api-detect-badge.anthropic { background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
+    .api-detect-badge.openai    { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+    .api-detect-badge.unknown   { background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.25); }
+    /* API detail card */
+    #api-detail { display: none; border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-top: 14px; background: rgba(255,255,255,0.018); }
+    #api-detail.open { display: block; }
+    .api-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .api-detail-item label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: #4e4e72; text-transform: uppercase; margin-bottom: 3px; }
+    .api-detail-item span { color: #c0c0e0; font-size: 13px; }
+    .api-detail-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    #api-msg { font-size: 12px; min-height: 16px; margin-top: 10px; text-align: center; }
+
+    /* ── DEV TEST PANEL — remove or set DEV_TEST_PANEL=false before sharing ── */
+    #test-bar {
+      position: fixed; bottom: 18px; left: 18px; z-index: 300;
+      display: flex; align-items: center; gap: 9px;
+    }
+    #dev-test-toggle {
+      background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);
+      color: #fbbf24; font-size: 11px; font-family: var(--font); font-weight: 700;
+      border-radius: 8px; padding: 5px 11px; cursor: pointer; letter-spacing: 0.03em;
+    }
+    #dev-test-toggle:hover { background: rgba(251,191,36,0.2); }
+    #sim-badge {
+      display: none; align-items: center; gap: 5px;
+      font-family: var(--font); font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em;
+      color: #4ade80; cursor: pointer; padding: 4px 10px;
+      background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2);
+      border-radius: 7px; transition: background 0.18s;
+      white-space: nowrap;
+    }
+    #sim-badge:hover { background: rgba(74,222,128,0.16); }
+    #sim-badge.done { color: #4e4e72; background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+    #dev-test-panel {
+      position: fixed; bottom: 52px; left: 18px; z-index: 299;
+      background: rgba(10,10,22,0.97); border: 1px solid rgba(251,191,36,0.22);
+      border-radius: 12px; padding: 14px; width: 260px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      display: none;
+    }
+    .tp-group { margin-bottom: 12px; }
+    .tp-label {
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: #2e2e50; margin-bottom: 6px;
+    }
+    .tp-btn {
+      display: block; width: 100%; text-align: left;
+      background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+      color: #9898c8; font-family: var(--font); font-size: 11.5px; font-weight: 500;
+      border-radius: 6px; padding: 6px 10px; cursor: pointer; margin-bottom: 4px;
+      transition: all 0.14s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .tp-btn:hover { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.18); color: #fbbf24; }
+    .tp-btn:last-child { margin-bottom: 0; }
+    /* ── END DEV TEST PANEL ── */
+
+    /* ── SIMULATION MODAL ─────────────────────────────────────────────────── */
+    #sim-modal {
+      display: none; position: fixed; inset: 0; z-index: 400;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
+      align-items: center; justify-content: center;
+    }
+    #sim-modal.open { display: flex; }
+    #sim-window {
+      background: #07070e; border: 1px solid rgba(99,102,241,0.22);
+      border-radius: 14px; width: min(700px, calc(100vw - 32px));
+      max-height: 82vh; overflow: hidden; display: flex; flex-direction: column;
+      box-shadow: 0 28px 72px rgba(0,0,0,0.85), 0 0 0 1px rgba(99,102,241,0.08);
+    }
+    #sim-titlebar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 16px 9px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.018); flex-shrink: 0;
+    }
+    #sim-titlebar-dots { display: flex; gap: 6px; }
+    .sim-dot {
+      width: 10px; height: 10px; border-radius: 50%; cursor: pointer;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.15s, transform 0.12s;
+    }
+    .sim-dot:hover { opacity: 0.9; transform: scale(1.2); }
+    .sim-dot::after {
+      content: ''; position: absolute; font-size: 7px; font-weight: 900; line-height: 1;
+      color: rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.15s;
+    }
+    .sim-dot:hover::after { opacity: 1; }
+    .sim-dot-r { background: rgba(248,113,113,0.75); }
+    .sim-dot-r::after { content: '✕'; }
+    .sim-dot-y { background: rgba(251,191,36,0.6); }
+    .sim-dot-y::after { content: '⤢'; }
+    .sim-dot-g { background: rgba(74,222,128,0.6); }
+    .sim-dot-g::after { content: '−'; font-size: 9px; }
+    #sim-title { font-size: 11px; font-weight: 700; color: #2e2e50; letter-spacing: 0.07em; text-transform: uppercase; }
+    #sim-close { background: none; border: none; color: #2e2e50; cursor: pointer; font-size: 16px; padding: 0 4px; line-height: 1; }
+    #sim-close:hover { color: #6366f1; }
+    #sim-controls {
+      padding: 12px 16px 10px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex; align-items: center; gap: 14px; flex-shrink: 0; flex-wrap: wrap;
+    }
+    #sim-count-wrap { display: flex; align-items: center; gap: 8px; }
+    #sim-count-wrap label { font-size: 11px; color: #4e4e72; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    #sim-count {
+      width: 58px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+      color: var(--text); font-family: var(--font); font-size: 13px; font-weight: 700;
+      border-radius: 7px; padding: 5px 8px; text-align: center;
+    }
+    #sim-count:focus { outline: none; border-color: rgba(99,102,241,0.4); }
+    .sim-toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .sim-toggle-label { font-size: 11px; color: #4e4e72; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    #sim-mock-toggle {
+      appearance: none; -webkit-appearance: none; width: 32px; height: 18px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px; cursor: pointer; position: relative; transition: background 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+    #sim-mock-toggle:checked { background: rgba(74,222,128,0.35); border-color: rgba(74,222,128,0.4); }
+    #sim-mock-toggle::before {
+      content: ''; position: absolute; left: 2px; top: 2px;
+      width: 12px; height: 12px; background: rgba(255,255,255,0.45);
+      border-radius: 50%; transition: transform 0.18s, background 0.18s;
+    }
+    #sim-mock-toggle:checked::before { transform: translateX(14px); background: #4ade80; }
+    #sim-mode-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; transition: color 0.2s; }
+    #sim-cancel-btn {
+      display: none; background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.25);
+      color: #f87171; font-family: var(--font); font-size: 11.5px; font-weight: 700;
+      border-radius: 8px; padding: 6px 14px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.18s;
+    }
+    #sim-cancel-btn:hover { background: rgba(248,113,113,0.2); border-color: rgba(248,113,113,0.4); }
+    #sim-run-btn {
+      margin-left: auto; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.28);
+      color: #a5b4fc; font-family: var(--font); font-size: 12px; font-weight: 700;
+      border-radius: 8px; padding: 7px 20px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.18s;
+    }
+    #sim-run-btn:hover:not(:disabled) { background: rgba(99,102,241,0.26); color: #c7d2fe; border-color: rgba(99,102,241,0.45); }
+    #sim-run-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    #sim-body {
+      flex: 1; overflow-y: auto; padding: 12px 16px 16px;
+      font-family: 'Courier New', Courier, monospace; font-size: 11.5px;
+    }
+    #sim-placeholder { color: #2e2e50; font-size: 11.5px; padding: 28px 0; text-align: center; line-height: 1.7; }
+    #sim-task-list { display: none; flex-direction: column; gap: 3px; margin-bottom: 14px; }
+    .sim-task-row {
+      display: flex; align-items: center; gap: 10px; padding: 5px 9px;
+      border-radius: 5px; background: rgba(255,255,255,0.018); border: 1px solid rgba(255,255,255,0.035);
+      transition: border-color 0.25s, background 0.25s;
+    }
+    .sim-task-row.running { border-color: rgba(251,191,36,0.18); }
+    .sim-task-row.done { border-color: rgba(74,222,128,0.16); background: rgba(74,222,128,0.022); }
+    .sim-task-row.failed { border-color: rgba(248,113,113,0.18); background: rgba(248,113,113,0.018); }
+    .sim-task-id { color: #2e2e50; width: 24px; flex-shrink: 0; font-weight: 700; font-size: 10.5px; }
+    .sim-task-status { width: 54px; flex-shrink: 0; font-weight: 800; font-size: 9.5px; letter-spacing: 0.07em; }
+    .sim-task-status.running { color: #fbbf24; }
+    .sim-task-status.done    { color: #4ade80; }
+    .sim-task-status.failed  { color: #f87171; }
+    .sim-task-prompt { flex: 1; color: #3a3a60; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; }
+    .sim-task-meta { color: #2a2a48; flex-shrink: 0; font-size: 10px; display: flex; gap: 8px; }
+    #sim-report {
+      display: none; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 14px; margin-top: 2px;
+    }
+    #sim-report-mode {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 4px; display: inline-block; margin-bottom: 12px;
+    }
+    .sim-report-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px;
+    }
+    @media (max-width: 560px) { .sim-report-grid { grid-template-columns: 1fr 1fr; } }
+    .sim-stat-card {
+      background: rgba(255,255,255,0.022); border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 7px; padding: 8px 10px;
+    }
+    .sim-stat-k { font-size: 9px; font-weight: 700; letter-spacing: 0.07em; color: #2a2a48; text-transform: uppercase; margin-bottom: 4px; }
+    .sim-stat-v { font-size: 15px; font-weight: 800; color: var(--text); font-family: var(--font); }
+    .sim-stat-v.ok   { color: #4ade80; }
+    .sim-stat-v.fail { color: #f87171; }
+    #sim-cc {
+      border-radius: 8px; padding: 10px 14px; margin-top: 8px; font-size: 11px; line-height: 1.6;
+      font-family: var(--font); font-weight: 500;
+    }
+    #sim-cc.pass { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.16); color: #4ade80; }
+    #sim-cc.fail { background: rgba(248,113,113,0.06); border: 1px solid rgba(248,113,113,0.18); color: #f87171; }
+    #sim-errs { margin-top: 8px; }
+    .sim-err-row { font-size: 10.5px; color: #f87171; padding: 2px 0; }
+    /* ── END SIMULATION MODAL ─────────────────────────────────────────────── */
   </style>
 </head>
 
@@ -786,7 +1137,7 @@
         </div>
         <p style="color:#4e4e72;font-size:13px;line-height:1.7">No accounts exist yet. Create the first admin account from your terminal:</p>
         <code id="login-setup-code">python scripts/manage_accounts.py create-admin</code>
-        <p style="color:#2e2e50;font-size:11.5px;margin-top:4px">Then reload this page.</p>
+        <p style="color:#545480;font-size:11.5px;margin-top:4px">Then reload this page.</p>
       </div>
     </div>
   </div>
@@ -795,109 +1146,293 @@
   <div id="admin-modal">
     <div class="admin-card">
       <h3>
-        Accounts &amp; Usage
+        Admin
         <button class="admin-close" id="admin-close-btn">✕</button>
       </h3>
-      <div id="admin-accounts-table-wrap">
-        <table class="acc-table">
-          <thead>
-            <tr>
-              <th>Username</th><th>Role</th><th>Tokens</th><th>Limit</th><th>Window</th><th>Active</th><th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="admin-accounts-body"></tbody>
-        </table>
+
+      <!-- Tab bar -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('users')">Users</button>
+        <button class="admin-tab" onclick="switchAdminTab('apis')">API Status</button>
       </div>
-      <div id="admin-msg"></div>
 
-      <div class="admin-section">
-        <h4>Add account</h4>
-        <div class="admin-form">
-          <input id="new-acc-user" placeholder="Username" />
-          <input id="new-acc-pass" type="password" placeholder="Password" />
-          <select id="new-acc-role">
-            <option value="user">user</option>
-            <option value="admin">admin</option>
-          </select>
-          <input id="new-acc-limit" type="number" placeholder="Token limit" value="5000" min="100" />
-          <input id="new-acc-hours" type="number" placeholder="Reset hours" value="3" min="0.5" step="0.5" />
-          <button class="admin-submit" id="new-acc-btn">Create account</button>
+      <!-- ── USERS TAB ── -->
+      <div id="admin-tab-users" class="admin-tab-panel active">
+        <div id="admin-accounts-table-wrap">
+          <table class="acc-table">
+            <thead>
+              <tr>
+                <th>Username</th><th>Role</th><th>Tokens</th><th>Limit</th><th>Window</th><th>Active</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-accounts-body"></tbody>
+          </table>
+        </div>
+        <div id="admin-msg"></div>
+
+        <div class="admin-section">
+          <h4>Add account</h4>
+          <div class="admin-form">
+            <input id="new-acc-user" placeholder="Username" />
+            <input id="new-acc-pass" type="password" placeholder="Password" />
+            <select id="new-acc-role">
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+            <input id="new-acc-limit" type="number" placeholder="Token limit" value="5000" min="100" />
+            <input id="new-acc-hours" type="number" placeholder="Reset hours" value="3" min="0.5" step="0.5" />
+            <button class="admin-submit" id="new-acc-btn">Create account</button>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Messages -->
-  <main id="messages">
-    <div id="chat-inner">
-
-      <!-- Empty state -->
-      <div id="empty">
-
-        <div id="empty-icon">
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-            <path d="M4 22L13 4L22 22M6.5 16H19.5" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+      <!-- ── API STATUS TAB ── -->
+      <div id="admin-tab-apis" class="admin-tab-panel">
+        <div class="api-add-row">
+          <button class="api-add-btn" onclick="toggleApiAddForm()">+ Add API</button>
         </div>
 
-        <h1 id="empty-headline">What shall we build?</h1>
-
-        <p id="empty-sub">
-          Koottam routes your question to specialized agents — clarifying, planning, coding, and teaching in concert.
-        </p>
-
-        <div id="empty-chips">
-          <button class="chip" onclick="useChip(this)">Build a task manager</button>
-          <button class="chip" onclick="useChip(this)">Fix my slow website</button>
-          <button class="chip" onclick="useChip(this)">Explain async / await</button>
-          <button class="chip" onclick="useChip(this)">Write a Python scraper</button>
-          <button class="chip" onclick="useChip(this)">Debug this error</button>
-          <button class="chip" onclick="useChip(this)">My cafe sales are slow</button>
-        </div>
-
-        <!-- Infinite agent capability marquee -->
-        <div id="empty-marquee">
-          <div class="marquee-track">
-            <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Clarifier</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Planner</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Executor</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#4ade80"></span>Coding Agent</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#c084fc"></span>Tutor</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Web Search</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#6366f1"></span>Task Router</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#f472b6"></span>Learn Mode</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#34d399"></span>Code Review</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#fb923c"></span>Architecture</span>
-            <!-- Duplicate for seamless loop -->
-            <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Clarifier</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Planner</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Executor</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#4ade80"></span>Coding Agent</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#c084fc"></span>Tutor</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Web Search</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#6366f1"></span>Task Router</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#f472b6"></span>Learn Mode</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#34d399"></span>Code Review</span>
-            <span class="marquee-item"><span class="marquee-dot" style="background:#fb923c"></span>Architecture</span>
+        <!-- Add API form (hidden by default) -->
+        <div id="api-add-form">
+          <!-- Step 1: name + key -->
+          <div id="api-form-step1">
+            <div class="admin-form" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+              <input id="api-name" placeholder="Provider name (e.g. groq)" />
+              <input id="api-key" type="password" placeholder="API key (stored in .env)" />
+            </div>
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <button class="admin-submit" onclick="saveApiKey()">Save API</button>
+              <span id="api-saving-indicator" style="font-size:11px;color:#9898c8;display:none">Saving…</span>
+            </div>
+            <p style="font-size:11px;color:#4e4e72;margin-top:8px">Provider is auto-detected from the key (gsk_ = Groq, sk-ant = Anthropic, sk- = OpenAI).</p>
+          </div>
+          <!-- Step 2: model picker (shown after key is saved) -->
+          <div id="api-model-picker">
+            <span id="api-detect-badge" class="api-detect-badge unknown"></span>
+            <p style="font-size:11px;color:#9898c8;margin-bottom:8px">Choose which model to use with this key:</p>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="api-model-select" style="flex:1"></select>
+              <input id="api-model-manual" placeholder="Model name" style="flex:1;display:none" />
+              <button class="admin-submit" onclick="confirmModel()" style="flex-shrink:0">Confirm</button>
+            </div>
+            <!-- Provider picker when auto-detect failed -->
+            <div id="api-provider-picker" style="display:none;margin-top:10px">
+              <p style="font-size:11px;color:#f87171;margin-bottom:6px" id="api-detect-error"></p>
+              <select id="api-provider-select" style="width:100%">
+                <option value="groq">Groq</option>
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+              </select>
+              <button class="admin-submit" style="margin-top:8px;width:100%" onclick="retryModelFetch()">Fetch models with selected provider</button>
+            </div>
           </div>
         </div>
 
+        <!-- API list table -->
+        <table class="api-table" id="api-list-table">
+          <thead>
+            <tr><th>Provider</th><th>Model</th><th>Key</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="api-list-body">
+            <tr><td colspan="5" style="color:#4e4e72;text-align:center;padding:20px">No APIs added yet.</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Per-API detail card (shown on row click) -->
+        <div id="api-detail">
+          <div class="api-detail-grid">
+            <div class="api-detail-item"><label>Provider</label><span id="det-name">—</span></div>
+            <div class="api-detail-item"><label>Model</label><span id="det-model">—</span></div>
+            <div class="api-detail-item"><label>Key</label><span id="det-key">—</span></div>
+            <div class="api-detail-item"><label>Status</label><span id="det-status">—</span></div>
+            <div class="api-detail-item"><label>Total calls</label><span id="det-calls">—</span></div>
+            <div class="api-detail-item"><label>Total tokens</label><span id="det-tokens">—</span></div>
+            <div class="api-detail-item"><label>Last used</label><span id="det-last-used">—</span></div>
+            <div class="api-detail-item"><label>Last tested</label><span id="det-last-tested">—</span></div>
+          </div>
+          <div class="api-detail-actions">
+            <button class="adm-btn adm-btn-blue" id="det-test-btn" onclick="testApi()">Test</button>
+            <button class="adm-btn adm-btn-red" id="det-delete-btn" onclick="deleteApi()">Delete</button>
+            <span id="det-test-result" style="font-size:12px;margin-left:8px"></span>
+          </div>
+        </div>
+
+        <div id="api-msg"></div>
       </div>
 
     </div>
-  </main>
-
-  <!-- Input -->
-  <div id="input-wrap">
-    <div class="input-container">
-      <div class="input-glow-ring"></div>
-      <div class="input-box">
-        <textarea id="input" rows="1" placeholder="Ask anything…"></textarea>
-        <button id="send-btn">Send</button>
-      </div>
-    </div>
-    <p class="input-hint"><kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for new line</p>
   </div>
+
+  <!-- DEV TEST PANEL — toggle DEV_TEST_PANEL=false to hide before sharing -->
+  <div id="test-bar">
+    <button id="dev-test-toggle" style="display:none">⚡ Test</button>
+    <span id="sim-badge">● Task Running</span>
+  </div>
+  <div id="dev-test-panel">
+    <div class="tp-group">
+      <div class="tp-label">Chat</div>
+      <button class="tp-btn" data-prompt="hi">hi</button>
+      <button class="tp-btn" data-prompt="how are you">how are you</button>
+      <button class="tp-btn" data-prompt="thanks">thanks</button>
+    </div>
+    <div class="tp-group">
+      <div class="tp-label">Task</div>
+      <button class="tp-btn" data-prompt="my business is slow">my business is slow</button>
+      <button class="tp-btn" data-prompt="plan a 3-day tokyo trip on a budget">plan a 3-day tokyo trip on a budget</button>
+    </div>
+    <div class="tp-group">
+      <div class="tp-label">Code</div>
+      <button class="tp-btn" data-prompt="write python to print 1 to 10">write python to print 1 to 10</button>
+      <button class="tp-btn" data-prompt="build a todo app in html css js">build a todo app in html css js</button>
+    </div>
+    <div class="tp-group">
+      <div class="tp-label">Learn</div>
+      <button class="tp-btn" data-prompt="teach me python">teach me python</button>
+      <button class="tp-btn" data-prompt="ready">ready</button>
+      <button class="tp-btn" data-prompt="next">next</button>
+    </div>
+    <div class="tp-group">
+      <div class="tp-label">Edge cases</div>
+      <button class="tp-btn" data-prompt="give me the numbers 1 to 10">give me the numbers 1 to 10</button>
+      <button class="tp-btn" data-prompt="what is the output of print('hello')">what is the output of print('hello')</button>
+    </div>
+    <div class="tp-group" style="border-top:1px solid rgba(255,255,255,0.045);margin-top:6px;padding-top:10px">
+      <div class="tp-label">Load testing</div>
+      <button class="tp-btn" id="sim-open-btn" style="border-color:rgba(99,102,241,0.22);color:#818cf8;font-weight:700">⚡ Simulation</button>
+    </div>
+  </div>
+
+  <!-- SIMULATION MODAL — dev/admin only -->
+  <div id="sim-modal" role="dialog" aria-label="Load Simulator">
+    <div id="sim-window">
+      <div id="sim-titlebar">
+        <div id="sim-titlebar-dots">
+          <span id="sim-dot-r" class="sim-dot sim-dot-r" title="Close"></span>
+          <span id="sim-dot-y" class="sim-dot sim-dot-y" title="Open in new tab"></span>
+          <span id="sim-dot-g" class="sim-dot sim-dot-g" title="Minimize"></span>
+        </div>
+        <span id="sim-title">Load Simulator — Dev Only</span>
+        <button id="sim-close" title="Close">✕</button>
+      </div>
+      <div id="sim-controls">
+        <div id="sim-count-wrap">
+          <label for="sim-count">Requests</label>
+          <input id="sim-count" type="number" min="1" max="50" value="10" />
+        </div>
+        <div class="sim-toggle-wrap">
+          <input id="sim-mock-toggle" type="checkbox" checked />
+          <span class="sim-toggle-label">Mock</span>
+          <span id="sim-mode-label" style="color:#4ade80">ON — no API quota</span>
+        </div>
+        <button id="sim-cancel-btn">■ Cancel</button>
+        <button id="sim-run-btn">▶ Run</button>
+      </div>
+      <div id="sim-body">
+        <div id="sim-placeholder">
+          Enter a count (1–50), choose mode, then click Run.<br>
+          <span style="font-size:10px;color:#1e1e38">Mock ON = zero Groq quota used. Tests internal locks &amp; counters.</span>
+        </div>
+        <div id="sim-task-list"></div>
+        <div id="sim-report">
+          <span id="sim-report-mode"></span>
+          <div class="sim-report-grid" id="sim-stats-grid"></div>
+          <div id="sim-cc"></div>
+          <div id="sim-errs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main app: sidebar + chat -->
+  <div id="app-layout">
+
+    <!-- Conversation history sidebar (shown after login) -->
+    <div id="sidebar">
+      <div id="sidebar-header">
+        <span class="sidebar-label">History</span>
+        <button id="sidebar-new-btn">+ New</button>
+      </div>
+      <div id="sidebar-list">
+        <div class="sidebar-empty">No conversations yet.</div>
+      </div>
+    </div>
+
+    <!-- Chat area -->
+    <div id="chat-area">
+
+      <main id="messages">
+        <div id="chat-inner">
+
+          <!-- Empty state -->
+          <div id="empty">
+
+            <div id="empty-icon">
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+                <path d="M4 22L13 4L22 22M6.5 16H19.5" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <h1 id="empty-headline">What shall we build?</h1>
+
+            <p id="empty-sub">
+              Koottam routes your question to specialized agents — clarifying, planning, coding, and teaching in concert.
+            </p>
+
+            <div id="empty-chips">
+              <button class="chip" onclick="useChip(this)">Build a task manager</button>
+              <button class="chip" onclick="useChip(this)">Fix my slow website</button>
+              <button class="chip" onclick="useChip(this)">Explain async / await</button>
+              <button class="chip" onclick="useChip(this)">Write a Python scraper</button>
+              <button class="chip" onclick="useChip(this)">Debug this error</button>
+              <button class="chip" onclick="useChip(this)">My cafe sales are slow</button>
+            </div>
+
+            <!-- Infinite agent capability marquee -->
+            <div id="empty-marquee">
+              <div class="marquee-track">
+                <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Clarifier</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Planner</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Executor</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#4ade80"></span>Coding Agent</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#c084fc"></span>Tutor</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Web Search</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#6366f1"></span>Task Router</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#f472b6"></span>Learn Mode</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#34d399"></span>Code Review</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#fb923c"></span>Architecture</span>
+                <!-- Duplicate for seamless loop -->
+                <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Clarifier</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#fbbf24"></span>Planner</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Executor</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#4ade80"></span>Coding Agent</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#c084fc"></span>Tutor</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#22d3ee"></span>Web Search</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#6366f1"></span>Task Router</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#f472b6"></span>Learn Mode</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#34d399"></span>Code Review</span>
+                <span class="marquee-item"><span class="marquee-dot" style="background:#fb923c"></span>Architecture</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+
+      <!-- Input -->
+      <div id="input-wrap">
+        <div class="input-container">
+          <div class="input-glow-ring"></div>
+          <div class="input-box">
+            <textarea id="input" rows="1" placeholder="Ask anything…"></textarea>
+            <button id="send-btn">Send</button>
+          </div>
+        </div>
+        <p class="input-hint"><kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for new line</p>
+      </div>
+
+    </div><!-- /chat-area -->
+  </div><!-- /app-layout -->
 
 
   <script>
@@ -933,6 +1468,9 @@
     const $usageWrap = document.getElementById('usage-bar-wrap')
     const $usageFill = document.getElementById('usage-bar-fill')
     const $usageLbl  = document.getElementById('usage-label')
+    const $sidebar   = document.getElementById('sidebar')
+    const $sideList  = document.getElementById('sidebar-list')
+    const $sideNew   = document.getElementById('sidebar-new-btn')
 
     // ── Auth state ────────────────────────────────────────────────────────────
     const AUTH = {
@@ -1033,9 +1571,18 @@
       localStorage.removeItem('koottam_token')
       localStorage.removeItem('koottam_username')
       localStorage.removeItem('koottam_role')
+      sessionStorage.removeItem('koottam_admin_token')
+      sessionStorage.removeItem('koottam_admin_username')
+      document.getElementById('impersonate-bar').style.display = 'none'
+      document.body.style.paddingBottom = ''
       $navUser.style.display = 'none'
       $navUserSp.style.display = 'none'
       $usageWrap.style.display = 'none'
+      // Hide sidebar and clear it
+      $sidebar.style.display = 'none'
+      $sideList.innerHTML = '<div class="sidebar-empty">No conversations yet.</div>'
+      sessionId = null
+      resetUI()
       showLogin()
     }
 
@@ -1066,6 +1613,87 @@
       $navUserSp.style.display = 'block'
       $adminBtn.style.display = AUTH.role === 'admin' ? 'inline-block' : 'none'
       refreshUsage()
+      if (window._testPanelCheck) window._testPanelCheck()
+      // Show sidebar and load history
+      $sidebar.style.display = 'flex'
+      loadSidebarHistory()
+    }
+
+    // ── Sidebar history ───────────────────────────────────────────────────────
+    async function loadSidebarHistory() {
+      if (!AUTH.token) return
+      try {
+        const r = await apiFetch('/conversations')
+        if (!r.ok) return
+        const d = await r.json()
+        renderSidebar(d.sessions || [])
+      } catch {}
+    }
+
+    function renderSidebar(sessions) {
+      if (!sessions.length) {
+        $sideList.innerHTML = '<div class="sidebar-empty">No conversations yet.<br>Start chatting to see history here.</div>'
+        return
+      }
+      $sideList.innerHTML = sessions.map(s =>
+        `<div class="convo-item${s.session_id === sessionId ? ' active' : ''}"
+              data-sid="${esc(s.session_id)}"
+              onclick="loadConvo('${esc(s.session_id)}')">
+           <div class="convo-title">${esc(s.title)}</div>
+           <div class="convo-time">${relativeTime(s.last_ts)}</div>
+         </div>`
+      ).join('')
+    }
+
+    function updateSidebarActive(sid) {
+      document.querySelectorAll('.convo-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.sid === sid)
+      })
+    }
+
+    function relativeTime(ts) {
+      if (!ts) return ''
+      const d = new Date(ts)
+      const diff = (Date.now() - d) / 1000
+      if (diff < 60)     return 'just now'
+      if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`
+      if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`
+      if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`
+      return d.toLocaleDateString()
+    }
+
+    // Load a past conversation into the chat area.
+    async function loadConvo(sid) {
+      if (busy) return
+      if (sid === sessionId) return  // already viewing this one
+      try {
+        const r = await apiFetch(`/history?session_id=${encodeURIComponent(sid)}`)
+        if (!r.ok) return
+        const d = await r.json()
+        const turns = (d.conversations || []).slice().reverse()  // oldest first
+        if (!turns.length) return
+
+        sessionId = sid
+        isNewChat = false
+        resetUI()
+        $empty.style.display = 'none'
+
+        for (const turn of turns) {
+          if (turn.user_message) addUser(turn.user_message, false)
+          if ((turn.messages || []).length) {
+            addResponse({ messages: turn.messages, metrics: {}, route: turn.route || '' }, false)
+          }
+        }
+        // Highlight code blocks that were just rendered
+        $inner.querySelectorAll('pre code').forEach(b => {
+          if (!b.classList.length) b.classList.add('nohighlight')
+          hljs.highlightElement(b)
+        })
+        $messages.scrollTop = $messages.scrollHeight
+        updateSidebarActive(sid)
+      } catch (err) {
+        console.error('loadConvo', err)
+      }
     }
 
     // ── Admin panel ───────────────────────────────────────────────────────────
@@ -1077,14 +1705,14 @@
     function closeAdmin() { $adminModal.style.display = 'none' }
 
     async function loadAdminAccounts() {
-      $adminBody.innerHTML = '<tr><td colspan="7" style="color:#2e2e50;padding:16px 10px">Loading…</td></tr>'
+      $adminBody.innerHTML = '<tr><td colspan="7" style="color:#525278;padding:16px 10px">Loading…</td></tr>'
       try {
         const r = await apiFetch('/admin/accounts')
         if (!r.ok) { $adminBody.innerHTML = '<tr><td colspan="7" style="color:#f87171">Failed to load.</td></tr>'; return }
         const d = await r.json()
         const accounts = d.accounts || []
         if (!accounts.length) {
-          $adminBody.innerHTML = '<tr><td colspan="7" style="color:#2e2e50;padding:16px 10px">No accounts yet.</td></tr>'
+          $adminBody.innerHTML = '<tr><td colspan="7" style="color:#525278;padding:16px 10px">No accounts yet.</td></tr>'
           return
         }
         $adminBody.innerHTML = accounts.map(a => {
@@ -1108,6 +1736,8 @@
                 onclick="adminToggle(${a.id}, ${a.is_active ? 0 : 1})">${a.is_active ? 'disable' : 'enable'}</button>
               <button class="adm-btn adm-btn-blue"
                 onclick="adminResetUsage(${a.id})">reset tok</button>
+              ${a.username !== AUTH.username && a.is_active ? '<button class="adm-btn adm-btn-purple" onclick="adminLoginAs(' + a.id + ')">login as</button>' : ''}
+              ${a.username !== AUTH.username ? '<button class="adm-btn adm-btn-red" onclick="adminDeleteUser(' + a.id + ',\'' + esc(a.username) + '\')">delete</button>' : ''}
             </td>
           </tr>`
         }).join('')
@@ -1124,6 +1754,52 @@
     async function adminResetUsage(id) {
       await apiFetch(`/admin/accounts/${id}/reset-usage`, { method: 'POST' }).catch(() => {})
       await loadAdminAccounts()
+    }
+
+    async function adminLoginAs(id) {
+      const res = await apiFetch(`/admin/accounts/${id}/login-as`, { method: 'POST' }).catch(() => null)
+      if (!res || !res.ok) { alert('Could not switch to this account.'); return }
+      const d = await res.json()
+      sessionStorage.setItem('koottam_admin_token',    AUTH.token)
+      sessionStorage.setItem('koottam_admin_username', AUTH.username)
+      AUTH.token    = d.token
+      AUTH.username = d.username
+      AUTH.role     = d.role
+      localStorage.setItem('koottam_token',    d.token)
+      localStorage.setItem('koottam_username', d.username)
+      localStorage.setItem('koottam_role',     d.role)
+      closeAdmin()
+      resetUI()
+      onAuthReady()
+      showImpersonateBar(d.username)
+    }
+
+    async function adminDeleteUser(id, username) {
+      if (!confirm('Permanently delete "' + username + '"? This cannot be undone.')) return
+      const res = await apiFetch('/admin/accounts/' + id, { method: 'DELETE' }).catch(() => null)
+      if (!res || !res.ok) { alert('Failed to delete account.'); return }
+      await loadAdminAccounts()
+    }
+
+    function showImpersonateBar(username) {
+      document.getElementById('impersonate-name').textContent = username
+      document.getElementById('impersonate-bar').style.display = 'flex'
+      document.body.style.paddingBottom = '44px'
+    }
+
+    function returnToAdmin() {
+      AUTH.token    = sessionStorage.getItem('koottam_admin_token')
+      AUTH.username = sessionStorage.getItem('koottam_admin_username')
+      AUTH.role     = 'admin'
+      localStorage.setItem('koottam_token',    AUTH.token)
+      localStorage.setItem('koottam_username', AUTH.username)
+      localStorage.setItem('koottam_role',     'admin')
+      sessionStorage.removeItem('koottam_admin_token')
+      sessionStorage.removeItem('koottam_admin_username')
+      document.getElementById('impersonate-bar').style.display = 'none'
+      document.body.style.paddingBottom = ''
+      resetUI()
+      onAuthReady()
     }
 
     async function createAccount() {
@@ -1156,6 +1832,233 @@
       setTimeout(() => { $adminMsg.textContent = '' }, 3500)
     }
 
+    // ── API Status tab ────────────────────────────────────────────────────────
+    let _activeApiId = null
+
+    function switchAdminTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('onclick').includes(`'${tab}'`))
+      })
+      document.getElementById('admin-tab-users').classList.toggle('active', tab === 'users')
+      document.getElementById('admin-tab-apis').classList.toggle('active', tab === 'apis')
+      if (tab === 'apis') loadApiProviders()
+    }
+
+    // Tracks the provider id returned after saveApiKey(), used by confirmModel()
+    let _pendingProviderId = null
+
+    function toggleApiAddForm() {
+      const f = document.getElementById('api-add-form')
+      const opening = !f.classList.contains('open')
+      f.classList.toggle('open')
+      if (opening) {
+        resetApiForm()
+        document.getElementById('api-name').focus()
+      }
+    }
+
+    function resetApiForm() {
+      document.getElementById('api-name').value = ''
+      document.getElementById('api-key').value = ''
+      document.getElementById('api-model-picker').classList.remove('open')
+      document.getElementById('api-model-select').innerHTML = ''
+      document.getElementById('api-model-manual').style.display = 'none'
+      document.getElementById('api-model-manual').value = ''
+      document.getElementById('api-model-select').style.display = 'block'
+      document.getElementById('api-provider-picker').style.display = 'none'
+      document.getElementById('api-saving-indicator').style.display = 'none'
+      _pendingProviderId = null
+    }
+
+    async function saveApiKey() {
+      const name = document.getElementById('api-name').value.trim()
+      const key  = document.getElementById('api-key').value.trim()
+      if (!name) { setApiMsg('Provider name is required.', false); return }
+      if (!key)  { setApiMsg('API key is required.', false); return }
+
+      document.getElementById('api-saving-indicator').style.display = 'inline'
+      try {
+        // 1 — save key to DB / .env
+        const r = await apiFetch('/admin/apis', {
+          method: 'POST',
+          body: JSON.stringify({ name, key }),
+        })
+        const provider = await r.json()
+        if (!r.ok) { setApiMsg(provider.detail || 'Failed to save.', false); return }
+        _pendingProviderId = provider.id
+
+        // 2 — detect provider + fetch model list
+        const dr = await apiFetch('/admin/apis/detect-key', {
+          method: 'POST',
+          body: JSON.stringify({ key }),
+        })
+        const det = await dr.json()
+        _showModelPicker(det)
+        await loadApiProviders()
+      } catch { setApiMsg('Connection error.', false) }
+      finally { document.getElementById('api-saving-indicator').style.display = 'none' }
+    }
+
+    function _showModelPicker(det) {
+      const picker  = document.getElementById('api-model-picker')
+      const badge   = document.getElementById('api-detect-badge')
+      const sel     = document.getElementById('api-model-select')
+      const manual  = document.getElementById('api-model-manual')
+      const provPicker = document.getElementById('api-provider-picker')
+
+      badge.textContent = det.provider || 'unknown'
+      badge.className   = 'api-detect-badge ' + (det.provider || 'unknown')
+
+      if (det.models && det.models.length) {
+        sel.innerHTML = det.models.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('')
+        sel.style.display = 'block'
+        manual.style.display = 'none'
+        provPicker.style.display = 'none'
+      } else {
+        // Detection failed or no models — show manual input + provider fallback
+        sel.style.display = 'none'
+        manual.style.display = 'block'
+        provPicker.style.display = 'block'
+        document.getElementById('api-detect-error').textContent =
+          det.error || 'Could not fetch model list.'
+        if (det.provider) {
+          document.getElementById('api-provider-select').value = det.provider
+        }
+      }
+      picker.classList.add('open')
+    }
+
+    async function retryModelFetch() {
+      const key      = document.getElementById('api-key').value.trim()
+      const provider = document.getElementById('api-provider-select').value
+      // Map provider name → env_var for a targeted fetch
+      const envMap = { groq: 'GROQ_API', openai: 'OPENAI_API_KEY', anthropic: 'ANTHROPIC_API_KEY' }
+      const dr = await apiFetch('/admin/apis/detect-key', {
+        method: 'POST',
+        body: JSON.stringify({ key }),
+      })
+      const det = await dr.json()
+      // Override detected provider with the user's selection
+      det.provider = provider
+      _showModelPicker(det)
+    }
+
+    async function confirmModel() {
+      if (!_pendingProviderId) return
+      const sel    = document.getElementById('api-model-select')
+      const manual = document.getElementById('api-model-manual')
+      const model  = sel.style.display !== 'none' ? sel.value : manual.value.trim()
+      if (!model) { setApiMsg('Pick or enter a model name.', false); return }
+      try {
+        const r = await apiFetch(`/admin/apis/${_pendingProviderId}/model`, {
+          method: 'PATCH',
+          body: JSON.stringify({ model }),
+        })
+        if (r.ok) {
+          document.getElementById('api-add-form').classList.remove('open')
+          resetApiForm()
+          setApiMsg('API saved with model.', true)
+          await loadApiProviders()
+        } else {
+          setApiMsg('Failed to set model.', false)
+        }
+      } catch { setApiMsg('Connection error.', false) }
+    }
+
+    async function loadApiProviders() {
+      const tbody = document.getElementById('api-list-body')
+      tbody.innerHTML = '<tr><td colspan="5" style="color:#525278;padding:16px 10px">Loading…</td></tr>'
+      document.getElementById('api-detail').classList.remove('open')
+      _activeApiId = null
+      try {
+        const r = await apiFetch('/admin/apis')
+        if (!r.ok) { tbody.innerHTML = '<tr><td colspan="5" style="color:#f87171">Failed to load.</td></tr>'; return }
+        const providers = await r.json()
+        if (!providers.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="color:#4e4e72;text-align:center;padding:20px">No APIs added yet.</td></tr>'
+          return
+        }
+        tbody.innerHTML = providers.map(p => {
+          const dotClass = p.status === 'working' ? 'dot-working' : p.status === 'failed' ? 'dot-failed' : 'dot-untested'
+          return `<tr onclick="showApiDetail(${p.id})">
+            <td style="font-weight:600;color:#e8e8f8">${esc(p.name)}</td>
+            <td style="color:#4e4e72;font-size:11.5px">${esc(p.model || '—')}</td>
+            <td style="font-family:monospace;font-size:11.5px;color:#4e4e72">${esc(p.key_masked)}</td>
+            <td><span class="status-dot ${dotClass}"></span>${esc(p.status)}</td>
+            <td><button class="adm-btn adm-btn-blue" onclick="event.stopPropagation();showApiDetail(${p.id})">Details</button></td>
+          </tr>`
+        }).join('')
+      } catch { tbody.innerHTML = '<tr><td colspan="5" style="color:#f87171">Error.</td></tr>' }
+    }
+
+    async function showApiDetail(id) {
+      _activeApiId = id
+      try {
+        const r = await apiFetch('/admin/apis')
+        if (!r.ok) return
+        const providers = await r.json()
+        const p = providers.find(x => x.id === id)
+        if (!p) return
+        document.getElementById('det-name').textContent        = p.name
+        document.getElementById('det-model').textContent       = p.model || '—'
+        document.getElementById('det-key').textContent         = p.key_masked
+        document.getElementById('det-status').textContent      = p.status + (p.status_msg ? ` — ${p.status_msg}` : '')
+        document.getElementById('det-calls').textContent       = (p.total_calls || 0).toLocaleString()
+        document.getElementById('det-tokens').textContent      = (p.total_tokens || 0).toLocaleString()
+        document.getElementById('det-last-used').textContent   = p.last_used ? new Date(p.last_used).toLocaleString() : 'never'
+        document.getElementById('det-last-tested').textContent = p.last_tested ? new Date(p.last_tested).toLocaleString() : 'never'
+        document.getElementById('det-test-result').textContent = ''
+        document.getElementById('api-detail').classList.add('open')
+      } catch {}
+    }
+
+    async function testApi() {
+      if (!_activeApiId) return
+      const btn = document.getElementById('det-test-btn')
+      const resultEl = document.getElementById('det-test-result')
+      btn.disabled = true
+      btn.textContent = 'Testing…'
+      resultEl.textContent = ''
+      resultEl.style.color = '#9898c8'
+      try {
+        const r = await apiFetch(`/admin/apis/${_activeApiId}/test`, { method: 'POST' })
+        const d = await r.json()
+        resultEl.textContent = d.message || (d.ok ? 'Working' : 'Failed')
+        resultEl.style.color = d.ok ? '#4ade80' : '#f87171'
+        await loadApiProviders()
+        showApiDetail(_activeApiId)
+      } catch {
+        resultEl.textContent = 'Request failed.'
+        resultEl.style.color = '#f87171'
+      }
+      btn.disabled = false
+      btn.textContent = 'Test'
+    }
+
+    async function deleteApi() {
+      if (!_activeApiId) return
+      const name = document.getElementById('det-name').textContent
+      if (!confirm(`Delete API provider '${name}'? The key in .env will remain but the record will be removed.`)) return
+      try {
+        const r = await apiFetch(`/admin/apis/${_activeApiId}`, { method: 'DELETE' })
+        if (r.ok) {
+          _activeApiId = null
+          document.getElementById('api-detail').classList.remove('open')
+          setApiMsg(`'${name}' deleted.`, true)
+          await loadApiProviders()
+        } else {
+          setApiMsg('Failed to delete.', false)
+        }
+      } catch { setApiMsg('Connection error.', false) }
+    }
+
+    function setApiMsg(msg, ok) {
+      const el = document.getElementById('api-msg')
+      el.textContent = msg
+      el.style.color = ok ? '#4ade80' : '#f87171'
+      setTimeout(() => { el.textContent = '' }, 3500)
+    }
+
     $adminBtn.addEventListener('click', openAdmin)
     $adminClose.addEventListener('click', closeAdmin)
     $adminModal.addEventListener('click', e => { if (e.target === $adminModal) closeAdmin() })
@@ -1163,22 +2066,18 @@
 
     // ── App boot ──────────────────────────────────────────────────────────────
     ;(async () => {
-      // Check auth status first
       try {
         const sr = await fetch(`${API}/auth/status`)
         if (sr.ok) {
           const sd = await sr.json()
           if (sd.needs_setup) {
-            // No accounts yet: show setup instructions, let app run in bootstrap mode
             $loginFW.style.display = 'none'
             $loginSetup.style.display = 'block'
             $loginOv.style.display = 'flex'
-            // Don't block — load settings and continue in bootstrap mode
           } else if (!AUTH.token) {
             showLogin()
-            return  // halt until login
+            return
           } else {
-            // Validate stored token
             const mr = await fetch(`${API}/auth/me`, {
               headers: { 'Authorization': `Bearer ${AUTH.token}` }
             })
@@ -1191,6 +2090,7 @@
                 localStorage.setItem('koottam_role',     md.role)
                 updateUsageBar(md.tokens_used || 0, md.token_limit || 0)
                 onAuthReady()
+                if (sessionStorage.getItem('koottam_admin_token')) showImpersonateBar(AUTH.username)
               } else {
                 showLogin(); return
               }
@@ -1236,17 +2136,24 @@
       }).catch(() => {})
     })
 
-    // ── Event: new chat / clear ────────────────────────────────────────────────
-    $newChat.addEventListener('click', () => {
+    // ── Event: new chat ────────────────────────────────────────────────────────
+    function startNewChat() {
       sessionId = null
       isNewChat = true
       resetUI()
-    })
+      updateSidebarActive(null)
+    }
 
+    $newChat.addEventListener('click', startNewChat)
+    $sideNew.addEventListener('click', startNewChat)
+
+    // ── Event: clear history ──────────────────────────────────────────────────
     $clear.addEventListener('click', async () => {
-      await fetch(`${API}/memory/clear`, { method: 'POST' }).catch(() => {})
+      await apiFetch('/memory/clear', { method: 'POST' }).catch(() => {})
       sessionId = null
       resetUI()
+      // Reload sidebar to reflect deletion
+      await loadSidebarHistory()
     })
 
     // ── Event: copy code ──────────────────────────────────────────────────────
@@ -1272,6 +2179,7 @@
     async function send() {
       const text = $input.value.trim()
       if (!text || busy) return
+      const isFirstMessage = !sessionId
       $empty.style.display = 'none'
       addUser(text)
       $input.value = ''
@@ -1294,7 +2202,14 @@
         isNewChat = false
         removeEl(tid)
         addResponse(data)
-        refreshUsage()  // update token bar after each message
+        refreshUsage()
+        // Refresh sidebar when this was the first message (new session created)
+        // or periodically to keep timestamps fresh.
+        if (isFirstMessage) {
+          await loadSidebarHistory()
+        } else {
+          updateSidebarActive(sessionId)
+        }
       } catch (err) {
         if (err.message !== 'Unauthenticated') {
           removeEl(tid)
@@ -1316,20 +2231,23 @@
       gsap.to('#empty-icon', { opacity: 1, duration: 0.3 })
     }
 
-    function addUser(text) {
-      const wrap = mkdiv('', 'display:flex;justify-content:flex-end;margin-bottom:18px')
+    // animate=true for live messages; false for history replay (no stagger)
+    function addUser(text, animate = true) {
+      const wrap = mkdiv('', 'display:flex;justify-content:flex-end;margin-bottom:22px')
       const bubble = mkdiv('user-bubble')
       bubble.textContent = text
       wrap.appendChild(bubble)
       append(wrap)
-      gsap.fromTo(bubble, { opacity: 0, x: 8, scale: 0.97 }, { opacity: 1, x: 0, scale: 1, duration: 0.28, ease: 'power3.out' })
+      if (animate) {
+        gsap.fromTo(bubble, { opacity: 0, x: 8, scale: 0.97 }, { opacity: 1, x: 0, scale: 1, duration: 0.28, ease: 'power3.out' })
+      }
     }
 
-    function addResponse(data) {
+    function addResponse(data, animate = true) {
       const msgs    = data.messages || []
       const metrics = data.metrics  || {}
       const route   = data.route    || ''
-      const group   = mkdiv('', 'margin-bottom:22px')
+      const group   = mkdiv('', 'margin-bottom:32px')
 
       msgs.forEach(msg => {
         const name = msg.agent   || 'Agent'
@@ -1361,12 +2279,14 @@
       }
 
       append(group)
-      gsap.fromTo(group.querySelectorAll('.agent-row'),
-        { opacity: 0, y: 14, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.34, ease: 'power3.out', stagger: 0.1 })
-      group.querySelectorAll('pre code').forEach(b => {
-        if (!b.classList.length) b.classList.add('nohighlight')
-        hljs.highlightElement(b)
-      })
+      if (animate) {
+        gsap.fromTo(group.querySelectorAll('.agent-row'),
+          { opacity: 0, y: 14, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.34, ease: 'power3.out', stagger: 0.1 })
+        group.querySelectorAll('pre code').forEach(b => {
+          if (!b.classList.length) b.classList.add('nohighlight')
+          hljs.highlightElement(b)
+        })
+      }
     }
 
     function addTyping() {
@@ -1376,7 +2296,7 @@
       const labelCol = mkdiv('agent-label-col')
       const badge = mkdiv('agent-badge')
       badge.textContent = '···'
-      badge.style.cssText = 'color:#2e2e50;background:rgba(255,255,255,0.015);border-color:rgba(255,255,255,0.05)'
+      badge.style.cssText = 'color:#484870;background:rgba(255,255,255,0.025);border-color:rgba(255,255,255,0.07)'
       labelCol.appendChild(badge)
       const dots = mkdiv('', 'display:flex;align-items:center;gap:5px;padding:12px 16px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);border-radius:5px 16px 16px 16px')
       dots.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>'
@@ -1445,6 +2365,307 @@
     function append(el) { $inner.appendChild(el); $messages.scrollTop = $messages.scrollHeight }
     function removeEl(id) { document.getElementById(id)?.remove() }
     function setBusy(v) { busy = v; $send.disabled = v; $input.disabled = v; if (!v) $input.focus() }
+
+    // ── DEV TEST PANEL ────────────────────────────────────────────────────────
+    // Set false (or delete this block) before sharing with real users.
+    const DEV_TEST_PANEL = true
+
+    ;(function initTestPanel() {
+      if (!DEV_TEST_PANEL) return
+
+      const $toggle = document.getElementById('dev-test-toggle')
+      const $panel  = document.getElementById('dev-test-panel')
+
+      // Only show for admins (or in bootstrap mode before any accounts exist).
+      function maybeShowToggle() {
+        const isAdmin = AUTH.role === 'admin'
+        const isBootstrap = !AUTH.token
+        if ((isAdmin || isBootstrap) && DEV_TEST_PANEL) {
+          $toggle.style.display = 'block'
+        }
+      }
+
+      // Expose so onAuthReady() can call it after login resolves the role.
+      window._testPanelCheck = maybeShowToggle
+
+      $toggle.addEventListener('click', () => {
+        const open = $panel.style.display === 'block'
+        $panel.style.display = open ? 'none' : 'block'
+      })
+
+      // Each prompt button: fill input + send
+      $panel.querySelectorAll('.tp-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const prompt = btn.dataset.prompt
+          if (!prompt) return
+          $input.value = prompt
+          $panel.style.display = 'none'
+          send()
+        })
+      })
+
+      maybeShowToggle()
+    })()
+    // ── END DEV TEST PANEL ────────────────────────────────────────────────────
+
+    // ── SIMULATION TOOL ───────────────────────────────────────────────────────
+    ;(function initSimulation() {
+      if (!DEV_TEST_PANEL) return
+
+      const $modal      = document.getElementById('sim-modal')
+      const $close      = document.getElementById('sim-close')
+      const $openBtn    = document.getElementById('sim-open-btn')
+      const $mock       = document.getElementById('sim-mock-toggle')
+      const $modeLabel  = document.getElementById('sim-mode-label')
+      const $runBtn     = document.getElementById('sim-run-btn')
+      const $cancelBtn  = document.getElementById('sim-cancel-btn')
+      const $taskList   = document.getElementById('sim-task-list')
+      const $report     = document.getElementById('sim-report')
+      const $ph         = document.getElementById('sim-placeholder')
+      const $badge      = document.getElementById('sim-badge')
+      const $dotR       = document.getElementById('sim-dot-r')
+      const $dotY       = document.getElementById('sim-dot-y')
+      const $dotG       = document.getElementById('sim-dot-g')
+
+      // ── State ──────────────────────────────────────────────────────────────
+      let minimized  = false
+      let cancelFlag = false
+      let _currentRows = {}   // shared between minimize & report so badge-click works
+
+      // ── Window controls ────────────────────────────────────────────────────
+      function closeModal() {
+        $modal.classList.remove('open')
+        minimized = false
+        $badge.style.display = 'none'
+      }
+
+      function minimizeModal() {
+        $modal.classList.remove('open')
+        minimized = true
+        $badge.className = ''           // remove .done if present
+        $badge.textContent = '● Task Running'
+        $badge.style.display = 'flex'
+      }
+
+      // Red dot & existing ✕ button → close
+      if ($dotR) $dotR.addEventListener('click', closeModal)
+      $close.addEventListener('click', closeModal)
+
+      // Yellow dot → open in new tab
+      if ($dotY) $dotY.addEventListener('click', () => window.open(location.href, '_blank'))
+
+      // Green dot → minimize
+      if ($dotG) $dotG.addEventListener('click', minimizeModal)
+
+      // Click outside backdrop → close
+      $modal.addEventListener('click', e => { if (e.target === $modal) closeModal() })
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && !minimized) closeModal() })
+
+      // Badge click → re-open modal and show report if sim already finished
+      $badge.addEventListener('click', () => {
+        minimized = false
+        $badge.style.display = 'none'
+        $modal.classList.add('open')
+        if ($badge._doneEvent && $report.style.display !== 'block') {
+          _showReport($badge._doneEvent)
+        }
+      })
+
+      // ── Mock toggle label ──────────────────────────────────────────────────
+      $mock.addEventListener('change', () => {
+        if ($mock.checked) {
+          $modeLabel.textContent = 'ON — no API quota'
+          $modeLabel.style.color = '#4ade80'
+        } else {
+          $modeLabel.textContent = 'OFF — real Groq calls'
+          $modeLabel.style.color = '#f87171'
+        }
+      })
+
+      // ── Open from test panel ───────────────────────────────────────────────
+      if ($openBtn) {
+        $openBtn.addEventListener('click', () => {
+          document.getElementById('dev-test-panel').style.display = 'none'
+          minimized = false
+          $badge.style.display = 'none'
+          $modal.classList.add('open')
+        })
+      }
+
+      // ── Cancel button ──────────────────────────────────────────────────────
+      $cancelBtn.addEventListener('click', () => { cancelFlag = true })
+
+      // ── Run ────────────────────────────────────────────────────────────────
+      $runBtn.addEventListener('click', async () => {
+        const rawCount = parseInt(document.getElementById('sim-count').value) || 5
+        const count = Math.max(1, Math.min(50, rawCount))
+        const mock  = $mock.checked
+
+        // Reset UI
+        cancelFlag = false
+        $ph.style.display = 'none'
+        $report.style.display = 'none'
+        $taskList.style.display = 'flex'
+        $taskList.style.flexDirection = 'column'
+        $taskList.innerHTML = ''
+
+        // Build N "running" rows
+        const rows = {}
+        _currentRows = rows
+        for (let i = 1; i <= count; i++) {
+          const row = document.createElement('div')
+          row.className = 'sim-task-row running'
+          row.innerHTML =
+            `<span class="sim-task-id">#${i}</span>` +
+            `<span class="sim-task-status running">RUNNING</span>` +
+            `<span class="sim-task-prompt">waiting…</span>` +
+            `<span class="sim-task-meta"><span class="sim-time"></span><span class="sim-tok"></span></span>`
+          $taskList.appendChild(row)
+          rows[i] = row
+        }
+
+        $runBtn.disabled = true
+        $cancelBtn.style.display = 'inline-block'
+
+        try {
+          // 1. Start the simulation
+          const startRes = await apiFetch('/admin/simulate', {
+            method: 'POST',
+            body: JSON.stringify({ count, mock }),
+          })
+          if (!startRes.ok) {
+            const err = await startRes.json().catch(() => ({}))
+            throw new Error(err.detail || `Server error ${startRes.status}`)
+          }
+          const { sim_id } = await startRes.json()
+
+          // 2. Poll for progress until done or cancelled
+          const seen = new Set()
+          while (true) {
+            await new Promise(r => setTimeout(r, 160))
+
+            // Cancel: mark remaining RUNNING rows and stop
+            if (cancelFlag) {
+              Object.values(rows).forEach(row => {
+                if (row.classList.contains('running')) {
+                  row.className = 'sim-task-row'
+                  row.style.borderColor = 'rgba(255,255,255,0.05)'
+                  row.querySelector('.sim-task-status').className = 'sim-task-status'
+                  row.querySelector('.sim-task-status').style.color = '#2e2e50'
+                  row.querySelector('.sim-task-status').textContent = 'CANCEL'
+                  row.querySelector('.sim-task-prompt').textContent = '—'
+                }
+              })
+              break
+            }
+
+            const pollRes = await apiFetch(`/admin/simulate/${sim_id}/status`)
+            if (!pollRes.ok) break
+            const data = await pollRes.json()
+
+            for (const task of (data.tasks || [])) {
+              if (seen.has(task.task_id)) continue
+              seen.add(task.task_id)
+              _updateRow(task, rows)
+            }
+
+            if (data.status === 'done') {
+              if (data.done_event) {
+                if (minimized) {
+                  // Sim finished in background — update badge
+                  $badge.classList.add('done')
+                  $badge.textContent = '● Done — click to view'
+                } else {
+                  _showReport(data.done_event)
+                }
+                // Store event so badge-click can show report after re-open
+                $badge._doneEvent = data.done_event
+              }
+              break
+            }
+          }
+        } catch (err) {
+          const errRow = document.createElement('div')
+          errRow.className = 'sim-task-row failed'
+          errRow.style.padding = '8px 10px'
+          errRow.textContent = '⚠ ' + (err.message || String(err))
+          $taskList.appendChild(errRow)
+        } finally {
+          $runBtn.disabled = false
+          $cancelBtn.style.display = 'none'
+          cancelFlag = false
+        }
+      })
+
+
+      // ── Helpers ────────────────────────────────────────────────────────────
+      function _updateRow(task, rows) {
+        const row = rows[task.task_id]
+        if (!row) return
+        const ok = task.status === 'done'
+        row.className = `sim-task-row ${ok ? 'done' : 'failed'}`
+        row.querySelector('.sim-task-status').className = `sim-task-status ${ok ? 'done' : 'failed'}`
+        row.querySelector('.sim-task-status').textContent = ok ? 'DONE' : 'FAIL'
+        row.querySelector('.sim-task-prompt').textContent = task.prompt || '—'
+        const time = row.querySelector('.sim-time')
+        const tok  = row.querySelector('.sim-tok')
+        if (time) time.textContent = `${task.elapsed_s}s`
+        if (tok && task.tokens != null) tok.textContent = `${task.tokens} tok`
+        if (!ok && task.error) row.title = task.error
+      }
+
+      function _showReport(ev) {
+        const s  = ev.summary
+        const cc = ev.concurrency_check
+
+        const $mEl = document.getElementById('sim-report-mode')
+        if (s.mode === 'MOCK') {
+          $mEl.textContent = '⚡ MOCK MODE — Zero API quota used'
+          $mEl.style.cssText = 'background:rgba(74,222,128,0.09);border:1px solid rgba(74,222,128,0.22);color:#4ade80;font-family:var(--font)'
+        } else {
+          $mEl.textContent = '🔴 REAL MODE — Real Groq API calls'
+          $mEl.style.cssText = 'background:rgba(248,113,113,0.09);border:1px solid rgba(248,113,113,0.22);color:#f87171;font-family:var(--font)'
+        }
+
+        const grid = document.getElementById('sim-stats-grid')
+        grid.innerHTML = [
+          ['Total', s.total],
+          ['Succeeded', `<span class="sim-stat-v ok">${s.succeeded}</span>`, true],
+          ['Failed',    `<span class="sim-stat-v ${s.failed > 0 ? 'fail' : ''}">${s.failed}</span>`, true],
+          ['Avg time',  `${s.avg_time_s}s`],
+          ['Slowest',   `${s.slowest_s}s`],
+          ['Wall time', `${s.total_elapsed_s}s`],
+          ['Tokens',    s.total_tokens.toLocaleString()],
+          ['API calls', s.total_api_calls],
+        ].map(([k, v, raw]) =>
+          `<div class="sim-stat-card"><div class="sim-stat-k">${k}</div>` +
+          (raw ? `<div>${v}</div>` : `<div class="sim-stat-v">${v}</div>`) +
+          `</div>`
+        ).join('')
+
+        const $cc = document.getElementById('sim-cc')
+        $cc.className = cc.ok ? 'pass' : 'fail'
+        $cc.innerHTML = cc.ok
+          ? `✅ <strong>Concurrency OK</strong> — problems_solved_today +${cc.actual_delta} (expected +${cc.expected_delta}). tokens_delta +${cc.tokens_delta.toLocaleString()}, api_calls_delta +${cc.api_calls_delta}. No lost updates.`
+          : `❌ <strong>Concurrency issue</strong> — problems_solved_today +${cc.actual_delta} but expected +${cc.expected_delta}. Lost ${cc.expected_delta - cc.actual_delta} update(s)!`
+
+        const $errs = document.getElementById('sim-errs')
+        $errs.innerHTML = (ev.errors && ev.errors.length)
+          ? ev.errors.map(e => `<div class="sim-err-row">Task #${e.task_id}: ${e.error}</div>`).join('')
+          : ''
+
+        $report.style.display = 'block'
+      }
+    })()
+    // ── END SIMULATION TOOL ───────────────────────────────────────────────────
   </script>
+
+  <!-- Impersonation banner — shown when admin has switched into a user account -->
+  <div id="impersonate-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(36,24,4,0.97);border-top:1px solid rgba(251,191,36,0.18);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:9px 24px;flex-direction:row;align-items:center;justify-content:center;gap:14px;font-family:'Outfit',sans-serif">
+    <span style="font-size:11.5px;color:#78591a;font-weight:500;letter-spacing:0.01em">Viewing as</span>
+    <span id="impersonate-name" style="font-size:11.5px;color:#fbbf24;font-weight:700;letter-spacing:-0.01em"></span>
+    <span style="color:rgba(251,191,36,0.18);font-size:10px">—</span>
+    <button onclick="returnToAdmin()" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);color:#fbbf24;font-size:11px;font-family:'Outfit',sans-serif;font-weight:700;padding:4px 13px;border-radius:7px;cursor:pointer;letter-spacing:0.03em;transition:background 0.18s;text-transform:uppercase" onmouseover="this.style.background='rgba(251,191,36,0.2)'" onmouseout="this.style.background='rgba(251,191,36,0.1)'">Return to admin</button>
+  </div>
 </body>
 </html>
