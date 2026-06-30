@@ -43,6 +43,7 @@ from config.settings import settings
 from memory.memory_manager import memory_manager
 from tools.file_manager import list_files, _safe_path
 from auth.auth_manager import auth_manager
+from api.knowledge import router as knowledge_router
 
 # --------------------------------------------------------------------------- #
 # App + agents
@@ -56,6 +57,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(knowledge_router)
 
 colorama_init(autoreset=True)
 
@@ -249,6 +252,11 @@ def require_admin(
 @app.get("/ui", response_class=FileResponse)
 def ui() -> FileResponse:
     return FileResponse(os.path.join(os.path.dirname(__file__), "..", "frontend", "index.html"))
+
+
+@app.get("/knowledge-ui", response_class=FileResponse)
+def knowledge_ui() -> FileResponse:
+    return FileResponse(os.path.join(os.path.dirname(__file__), "..", "frontend", "knowledge.html"))
 
 
 @app.get("/")

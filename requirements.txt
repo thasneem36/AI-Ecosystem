@@ -6,3 +6,8 @@ colorama
 python-dotenv
 pydantic
 psutil
+
+# Knowledge ingestion
+chromadb
+pypdf
+python-docx
