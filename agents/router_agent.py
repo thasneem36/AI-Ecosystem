@@ -19,7 +19,31 @@ from typing import Any, Dict, List
 
 from agents.base_agent import BaseAgent
 
-VALID_ROUTES = ("chat", "task", "code", "learn")
+VALID_ROUTES = ("chat", "task", "code", "learn", "ctf")
+
+# Phrases that clearly signal a CTF / pentest task.
+# Detected deterministically so they never fall through to chat/task/learn.
+_CTF_PATTERNS = [
+    r"\bctf\b",
+    r"\bhack\s*the\s*box\b",
+    r"\bhtb\b",
+    r"\btryhackme\b",
+    r"\bthm\b",
+    r"\bpentest\b",
+    r"\bpenetration\s+test",
+    r"\bexploit\s+(?:this|the|a\b)",
+    r"\bpwn\b",
+    r"\bfind\s+(?:the\s+)?flag\b",
+    r"\bcapture\s+the\s+flag\b",
+    r"\bsql\s*injection\b",
+    r"\bsqli\b",
+    r"\broot\s+(?:the\s+)?(?:box|machine|server)\b",
+    r"\bget\s+(?:root|shell|rce)\b",
+    r"\breverse\s+shell\b",
+    r"\bprivilege\s+escal",
+    r"\bscan\s+(?:target\s+)?(?:\d{1,3}\.){3}\d{1,3}",    # "scan 10.10.x.x"
+    r"(?:\d{1,3}\.){3}\d{1,3}.*\b(?:hack|pwn|exploit|flag|vuln)\b",
+]
 
 # Phrases that clearly signal an open-ended "teach me / help me learn" request.
 # Detected deterministically so these never fall through to the Planner.

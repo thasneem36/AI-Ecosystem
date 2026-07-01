@@ -44,6 +44,7 @@ from memory.memory_manager import memory_manager
 from tools.file_manager import list_files, _safe_path
 from auth.auth_manager import auth_manager
 from api.knowledge import router as knowledge_router
+from tools.ctf_shell import router as ctf_router
 
 # --------------------------------------------------------------------------- #
 # App + agents
@@ -59,6 +60,7 @@ app.add_middleware(
 )
 
 app.include_router(knowledge_router)
+app.include_router(ctf_router)
 
 colorama_init(autoreset=True)
 

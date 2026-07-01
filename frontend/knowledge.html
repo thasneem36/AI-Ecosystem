@@ -1,893 +1,1154 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Koottam — Knowledge Base</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Koottam — Knowledge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#05050e;--s1:rgba(255,255,255,.026);--s2:rgba(255,255,255,.042);
+  --bd:rgba(255,255,255,.07);--bd2:rgba(255,255,255,.12);
+  --tx:#e2e2f0;--tx2:rgba(226,226,240,.55);--tx3:rgba(226,226,240,.28);
+  --mu:#3d3d5c;--ind:#6366f1;--ind2:#818cf8;
+  --font:'Outfit',sans-serif;
+  --ease:cubic-bezier(.32,.72,0,1);--ease2:cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 8%,rgba(99,60,241,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 88% 90%,rgba(34,211,238,.04) 0%,transparent 58%),
+    radial-gradient(ellipse 35% 30% at 55% 48%,rgba(168,85,247,.035) 0%,transparent 65%);
+}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(99,102,241,.2);border-radius:2px}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+/* ── App shell ── */
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh}
 
-  <style>
-    :root {
-      --font:    'Outfit', sans-serif;
-      --bg:      #06060f;
-      --surface: rgba(255,255,255,0.026);
-      --border:  rgba(255,255,255,0.068);
-      --text:    #ddddf0;
-      --muted:   #4e4e72;
-      --indigo:  #6366f1;
-    }
+/* ── Nav ── */
+#nav{
+  height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;border-bottom:1px solid var(--bd);
+  background:rgba(5,5,14,.9);backdrop-filter:blur(18px);
+}
+#nav-l{display:flex;align-items:center;gap:10px}
+#back{
+  font-size:11px;font-weight:600;color:var(--mu);text-decoration:none;
+  padding:4px 10px;border:1px solid var(--bd);border-radius:7px;
+  transition:color .15s,border-color .15s;
+}
+#back:hover{color:var(--tx);border-color:var(--bd2)}
+.vsep{width:1px;height:14px;background:var(--bd)}
+#nav-title{font-size:12.5px;font-weight:700;color:#a5b4fc}
+#nav-r{display:flex;align-items:center;gap:10px}
+#stats-pill{font-size:10.5px;color:var(--mu);background:var(--s1);
+  padding:3px 11px;border-radius:20px;border:1px solid var(--bd)}
+#auth-label{font-size:11px;color:#7577f4;font-weight:600}
+#sb-toggle{
+  display:none;background:none;border:1px solid var(--bd);
+  color:var(--mu);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer;
+  transition:color .15s,border-color .15s;
+}
+#sb-toggle:hover{color:var(--tx);border-color:var(--bd2)}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; overflow: hidden; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-    }
+/* ── Upload strip ── */
+#upload-strip{
+  padding:8px 16px;border-bottom:1px solid var(--bd);flex-shrink:0;
+  display:flex;gap:7px;align-items:center;flex-wrap:wrap;
+  background:rgba(5,5,14,.5);
+}
+#drop-zone{
+  flex:1;min-width:180px;border:1.5px dashed rgba(99,102,241,.28);border-radius:9px;
+  padding:8px 15px;display:flex;align-items:center;gap:9px;cursor:pointer;
+  background:rgba(99,102,241,.018);
+  transition:border-color .2s,background .2s;
+}
+#drop-zone:hover,#drop-zone.dg{border-color:rgba(99,102,241,.55);background:rgba(99,102,241,.04)}
+#dz-txt{font-size:12px;color:var(--tx2)}
+#dz-txt strong{color:#a5b4fc}
+#dz-hint{font-size:10.5px;color:var(--mu);margin-left:auto;white-space:nowrap}
+#scan-btn{
+  flex-shrink:0;background:rgba(34,211,238,.065);border:1px solid rgba(34,211,238,.2);
+  color:#67e8f9;border-radius:8px;padding:8px 13px;font-family:var(--font);
+  font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;
+  transition:background .2s,border-color .2s;
+}
+#scan-btn:hover{background:rgba(34,211,238,.12);border-color:rgba(34,211,238,.3)}
+#sel-row{display:none;align-items:center;gap:7px;flex:1;min-width:220px}
+.fchip{
+  display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.08);
+  border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:4px 9px;
+  font-size:11.5px;white-space:nowrap;
+}
+.eb{font-size:8.5px;font-weight:800;padding:1px 5px;border-radius:3px;
+  text-transform:uppercase;letter-spacing:.06em}
+.eb-pdf{background:rgba(239,68,68,.16);color:#fca5a5}
+.eb-docx,.eb-doc{background:rgba(59,130,246,.16);color:#93c5fd}
+.eb-txt{background:rgba(34,197,94,.16);color:#86efac}
+.eb-def{background:rgba(99,102,241,.16);color:#a5b4fc}
+#mod-in{
+  flex:1;min-width:0;background:rgba(255,255,255,.04);border:1px solid var(--bd);
+  border-radius:7px;padding:5px 11px;color:var(--tx);font-family:var(--font);
+  font-size:12px;outline:none;transition:border-color .18s;
+}
+#mod-in:focus{border-color:rgba(99,102,241,.42)}
+#mod-in::placeholder{color:var(--mu)}
+.ghost-btn{
+  background:none;border:1px solid var(--bd);color:var(--mu);border-radius:7px;
+  padding:5px 11px;font-family:var(--font);font-size:11.5px;cursor:pointer;flex-shrink:0;
+  transition:color .15s,border-color .15s;
+}
+.ghost-btn:hover{color:var(--tx);border-color:var(--bd2)}
+#feed-btn{
+  background:var(--ind);border:none;color:#fff;border-radius:7px;padding:5px 15px;
+  font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;
+  transition:background .2s,transform .15s;
+}
+#feed-btn:hover{background:var(--ind2)}
+#feed-btn:active{transform:scale(.97)}
+#feed-btn:disabled{opacity:.4;cursor:not-allowed}
+/* inline upload status */
+#upload-status{
+  font-size:11.5px;font-weight:600;color:#4ade80;display:none;align-items:center;gap:6px;
+  padding:4px 0;flex-shrink:0;
+}
+#upload-status.err{color:#f87171}
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 55% at 15% 5%,  rgba(99,66,241,0.08)  0%, transparent 65%),
-        radial-gradient(ellipse 55% 45% at 85% 85%, rgba(34,211,238,0.045) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 35% at 50% 50%, rgba(192,132,252,0.04)  0%, transparent 70%);
-    }
+/* ── Body row (sidebar + map) ── */
+#body-row{flex:1;display:flex;overflow:hidden;min-height:0}
 
-    ::-webkit-scrollbar { width: 3px; height: 3px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.25); border-radius: 2px; }
+/* ── Sidebar ── */
+#sidebar{
+  width:264px;flex-shrink:0;
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;
+  background:rgba(5,5,14,.55);
+  transition:transform .28s var(--ease2);
+}
+#tab-bar{
+  display:flex;align-items:center;gap:2px;
+  padding:8px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;
+}
+.tab{
+  flex:1;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  padding:5px 4px;border-radius:7px;border:none;background:none;color:var(--mu);
+  cursor:pointer;font-family:var(--font);transition:color .15s,background .15s;
+  white-space:nowrap;
+}
+.tab:hover{color:var(--tx2);background:rgba(255,255,255,.04)}
+.tab.active{color:#a5b4fc;background:rgba(99,102,241,.1)}
+#panel-items,#panel-queue,#panel-search{
+  flex:1;overflow-y:auto;padding:8px;display:none;min-height:0;
+}
+#panel-items.vis,#panel-queue.vis,#panel-search.vis{display:block}
 
-    /* ── Progress sidebar ─────────────────────────────────────────────────── */
-    #progress-panel {
-      position: fixed; bottom: 20px; right: -320px;
-      width: 295px;
-      background: rgba(8,8,20,0.97);
-      border: 1px solid rgba(99,102,241,0.3);
-      border-radius: 14px;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.05);
-      z-index: 500;
-      transition: right 0.32s cubic-bezier(0.4,0,0.2,1);
-      backdrop-filter: blur(12px);
-    }
-    #progress-panel.open { right: 14px; }
-    #progress-hd {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 11px 14px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.055);
-    }
-    #progress-hd-title {
-      font-size: 10.5px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.09em; color: var(--muted);
-    }
-    #progress-close {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 17px; line-height: 1; padding: 0;
-    }
-    #progress-close:hover { color: var(--text); }
-    #progress-body { padding: 12px 14px 14px; }
-    .pfile { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 11px; display: flex; align-items: center; gap: 7px; }
-    .pstep { display: flex; align-items: center; gap: 9px; padding: 4px 0; font-size: 12px; }
-    .pstep-icon { width: 18px; text-align: center; flex-shrink: 0; font-size: 13px; }
-    .pstep-label { color: var(--muted); }
-    .pstep.done   .pstep-icon  { color: #4ade80; }
-    .pstep.done   .pstep-label { color: rgba(221,221,240,0.75); }
-    .pstep.active .pstep-icon  { color: #a5b4fc; }
-    .pstep.active .pstep-label { color: var(--text); font-weight: 600; }
-    .pstep.err    .pstep-icon  { color: #f87171; }
-    .pstep.err    .pstep-label { color: #f87171; }
-    .pstep.pending .pstep-icon { color: rgba(255,255,255,0.1); }
-    .pmsg-ok  { margin-top: 12px; padding: 8px 11px; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.22); border-radius: 7px; font-size: 12px; color: #4ade80; font-weight: 600; }
-    .pmsg-err { margin-top: 12px; padding: 8px 11px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); border-radius: 7px; font-size: 12px; color: #f87171; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spin { display: inline-block; animation: spin 0.75s linear infinite; }
+/* Queue panel */
+#queue-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2px 4px 7px;
+}
+#queue-label{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--mu)}
+#queue-actions{display:flex;gap:5px}
+.qact{
+  font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;cursor:pointer;
+  border:1px solid;font-family:var(--font);transition:background .15s;
+}
+#q-run{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.25);color:#a5b4fc}
+#q-run:hover{background:rgba(99,102,241,.2)}
+#q-run:disabled{opacity:.35;cursor:not-allowed}
+#q-clr{background:none;border-color:var(--bd);color:var(--mu)}
+#q-clr:hover{color:var(--tx);border-color:var(--bd2)}
+#queue-empty{text-align:center;color:var(--mu);font-size:12px;padding:24px 0;line-height:1.8}
 
-    /* ── App container ────────────────────────────────────────────────────── */
-    #app {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      height: 100vh; overflow: hidden;
-    }
+/* Queue item */
+.qi{
+  background:var(--s1);border:1px solid var(--bd);border-radius:10px;
+  padding:10px 11px;margin-bottom:6px;
+  transition:border-color .15s;
+}
+.qi.running{border-color:rgba(99,102,241,.3)}
+.qi.done-ok{border-color:rgba(74,222,128,.25)}
+.qi.done-er{border-color:rgba(239,68,68,.25)}
+.qi-top{display:flex;align-items:flex-start;gap:8px}
+.qi-st{
+  width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:13px;margin-top:1px;
+}
+.qi-info{flex:1;min-width:0}
+.qi-fname{font-size:12px;font-weight:600;color:var(--tx);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.qi-mod-in{
+  width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bd);
+  border-radius:5px;padding:3px 7px;color:var(--tx2);font-family:var(--font);
+  font-size:10.5px;outline:none;transition:border-color .15s;
+}
+.qi-mod-in:focus{border-color:rgba(99,102,241,.4)}
+/* inline progress steps */
+.qi-steps{display:none;margin-top:8px;gap:4px;flex-direction:column}
+.qi.running .qi-steps,.qi.done-ok .qi-steps,.qi.done-er .qi-steps{display:flex}
+.qs{display:flex;align-items:center;gap:7px;font-size:11px}
+.qs-i{width:14px;text-align:center;font-size:12px;flex-shrink:0}
+.qs-l{color:var(--mu)}
+.qs.done  .qs-i{color:#4ade80}.qs.done  .qs-l{color:rgba(226,226,240,.65)}
+.qs.act   .qs-i{color:#a5b4fc}.qs.act   .qs-l{color:var(--tx);font-weight:600}
+.qs.err   .qs-i{color:#f87171}.qs.err   .qs-l{color:#f87171}
+.qs.pend  .qs-i{color:rgba(255,255,255,.1)}
+.qi-result{margin-top:7px;font-size:11px;font-weight:600}
+.qi.done-ok .qi-result{color:#4ade80}
+.qi.done-er .qi-result{color:#f87171}
 
-    /* ── Top nav ──────────────────────────────────────────────────────────── */
-    #topnav {
-      height: 48px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 20px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(6,6,15,0.9);
-      backdrop-filter: blur(14px);
-    }
-    #topnav-left { display: flex; align-items: center; gap: 12px; }
-    #back-btn {
-      font-size: 11.5px; font-weight: 600;
-      color: var(--muted); text-decoration: none;
-      padding: 4px 11px;
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      transition: all 0.15s;
-    }
-    #back-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.14); }
-    .nsep { width: 1px; height: 16px; background: var(--border); }
-    #nav-title { font-size: 13px; font-weight: 700; color: #a5b4fc; letter-spacing: 0.01em; }
-    #topnav-right { display: flex; align-items: center; gap: 10px; }
-    #stats-badge {
-      font-size: 11px; color: var(--muted);
-      background: var(--surface); padding: 3px 11px;
-      border-radius: 20px; border: 1px solid var(--border);
-    }
-    #auth-user { font-size: 11px; color: #7577f4; font-weight: 600; }
+/* Items panel */
+#items-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2px 4px 8px;gap:6px;flex-shrink:0;
+}
+#items-count{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.09em;color:var(--mu)}
+#items-actions{display:flex;gap:5px;align-items:center}
+#sel-all-btn{
+  font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--bd);background:none;color:var(--mu);
+  font-family:var(--font);transition:color .15s,border-color .15s;white-space:nowrap;
+}
+#sel-all-btn:hover{color:var(--tx);border-color:var(--bd2)}
+#del-sel-btn{
+  font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:6px;cursor:pointer;
+  border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.08);color:#fca5a5;
+  font-family:var(--font);transition:background .15s;white-space:nowrap;display:none;
+}
+#del-sel-btn:hover{background:rgba(239,68,68,.2)}
+.icard{
+  background:var(--s1);border:1px solid var(--bd);border-radius:9px;
+  padding:9px 11px;margin-bottom:6px;transition:border-color .15s,background .15s;
+  cursor:pointer;
+}
+.icard:hover{border-color:var(--bd2)}
+.icard.sel{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.04)}
+.icard-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:4px}
+.icb{
+  width:15px;height:15px;border-radius:4px;border:1.5px solid var(--bd2);
+  flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:800;color:transparent;
+  background:transparent;transition:background .15s,border-color .15s,color .15s;
+}
+.icard.sel .icb{background:rgba(239,68,68,.75);border-color:rgba(239,68,68,.9);color:#fff}
+.icard-name{font-size:12px;font-weight:600;color:var(--tx);flex:1;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.idel{background:none;border:none;color:rgba(239,68,68,.28);cursor:pointer;
+  font-size:12px;padding:0 2px;transition:color .15s;flex-shrink:0}
+.idel:hover{color:#f87171}
+.imeta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.mp{font-size:10px;color:var(--mu);background:rgba(255,255,255,.028);
+  padding:1px 6px;border-radius:4px}
+.mp-c{color:#a5b4fc;background:rgba(99,102,241,.08)}
 
-    /* ── Upload section ───────────────────────────────────────────────────── */
-    #upload-section {
-      padding: 11px 18px;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    #drop-zone {
-      border: 1.5px dashed rgba(99,102,241,0.32);
-      border-radius: 10px;
-      padding: 13px 20px;
-      display: flex; align-items: center; gap: 14px;
-      cursor: pointer;
-      background: rgba(99,102,241,0.025);
-      transition: all 0.18s;
-    }
-    #drop-zone:hover, #drop-zone.dragover {
-      border-color: rgba(99,102,241,0.6);
-      background: rgba(99,102,241,0.055);
-    }
-    #drop-icon { font-size: 20px; }
-    #drop-text { font-size: 13px; color: var(--muted); }
-    #drop-text strong { color: #a5b4fc; cursor: pointer; }
-    #drop-hint { font-size: 11px; color: rgba(78,78,114,0.65); margin-left: auto; }
+/* Search panel */
+#sq-wrap{display:flex;gap:6px;padding:2px 0 8px}
+#sq{
+  flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:7px;
+  padding:7px 10px;color:var(--tx);font-family:var(--font);font-size:12px;
+  outline:none;transition:border-color .18s;
+}
+#sq:focus{border-color:rgba(99,102,241,.42)}
+#sq::placeholder{color:var(--mu)}
+#sq-go{
+  background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);
+  color:#a5b4fc;border-radius:7px;padding:7px 12px;font-family:var(--font);
+  font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;
+  transition:background .18s;
+}
+#sq-go:hover{background:rgba(99,102,241,.22)}
+#sq-go:disabled{opacity:.35;cursor:not-allowed}
+.rcard{background:var(--s1);border:1px solid var(--bd);border-radius:9px;
+  padding:10px 11px;margin-bottom:7px}
+.rtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.rsrc{font-size:11px;font-weight:700;color:#a5b4fc;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rscr{font-size:10px;padding:1px 7px;border-radius:4px;
+  background:rgba(255,255,255,.036);flex-shrink:0;margin-left:6px}
+.rhi{color:#4ade80}.rmd{color:#fbbf24}.rlo{color:var(--mu)}
+.rtxt{font-size:11.5px;color:var(--tx2);line-height:1.55;max-height:72px;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+.rmeta{font-size:10px;color:var(--mu);margin-top:4px}
+.empty-st{text-align:center;color:var(--mu);font-size:12px;padding:20px 0;line-height:1.8}
 
-    #sel-row {
-      display: none; align-items: center; gap: 8px;
-    }
-    .fchip {
-      display: flex; align-items: center; gap: 7px;
-      background: rgba(99,102,241,0.09);
-      border: 1px solid rgba(99,102,241,0.22);
-      border-radius: 7px; padding: 5px 12px; font-size: 12px;
-      white-space: nowrap;
-    }
-    .ebadge {
-      font-size: 9px; font-weight: 700; padding: 1px 5px;
-      border-radius: 3px; text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .epdf  { background: rgba(239,68,68,0.14);  color: #fca5a5; }
-    .edocx,.edoc { background: rgba(59,130,246,0.14); color: #93c5fd; }
-    .etxt  { background: rgba(34,197,94,0.14);  color: #86efac; }
-    .edef  { background: rgba(99,102,241,0.14); color: #a5b4fc; }
+/* ── Map area ── */
+#map-wrap{
+  flex:1;overflow:hidden;position:relative;
+  background:transparent;cursor:grab;user-select:none;touch-action:none;
+}
+#map-controls{
+  position:absolute;top:10px;right:12px;z-index:10;
+  display:flex;gap:5px;
+}
+.mctl{
+  background:rgba(5,5,14,.75);border:1px solid var(--bd);
+  color:var(--mu);border-radius:7px;padding:4px 9px;font-size:11px;
+  cursor:pointer;font-family:var(--font);font-weight:600;
+  transition:color .15s,border-color .15s;backdrop-filter:blur(8px);
+}
+.mctl:hover{color:var(--tx);border-color:var(--bd2)}
+#map-empty{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;color:var(--mu);font-size:13px;line-height:2.5;display:none;
+  pointer-events:none;
+}
+#mm-svg{display:block;width:100%;height:100%}
+.mctl-sep{width:1px;height:14px;background:rgba(255,255,255,.1);display:inline-block;margin:0 2px;vertical-align:middle}
 
-    #name-in {
-      flex: 1; min-width: 0;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: 7px;
-      padding: 6px 12px; color: var(--text);
-      font-family: var(--font); font-size: 12.5px; outline: none;
-      transition: border-color 0.15s;
-    }
-    #name-in:focus { border-color: rgba(99,102,241,0.48); }
-    #name-in::placeholder { color: var(--muted); }
-    #cancel-btn {
-      background: none; border: 1px solid var(--border);
-      color: var(--muted); border-radius: 7px; padding: 6px 12px;
-      font-family: var(--font); font-size: 12px; cursor: pointer; flex-shrink: 0;
-    }
-    #cancel-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.14); }
-    #feed-btn {
-      background: var(--indigo); border: none; color: #fff;
-      border-radius: 7px; padding: 6px 18px;
-      font-family: var(--font); font-size: 12.5px; font-weight: 700;
-      cursor: pointer; flex-shrink: 0; transition: background 0.15s;
-    }
-    #feed-btn:hover  { background: #818cf8; }
-    #feed-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    /* ── Main content ─────────────────────────────────────────────────────── */
-    #main-content {
-      flex: 1; display: flex; flex-direction: column; overflow: hidden;
-    }
-
-    /* ── Tree section ─────────────────────────────────────────────────────── */
-    #tree-section {
-      flex-shrink: 0; border-bottom: 1px solid var(--border);
-    }
-    #tree-hd {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 7px 18px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .sec-title {
-      font-size: 10.5px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted);
-    }
-    .icon-btn {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 14px; padding: 2px 6px;
-      border-radius: 4px; transition: all 0.15s;
-    }
-    .icon-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-    #tree-wrap {
-      overflow-x: auto; overflow-y: hidden;
-      padding: 10px 18px;
-      height: 190px;
-    }
-    #tree-svg { display: block; }
-    #tree-empty {
-      display: none; text-align: center;
-      color: var(--muted); font-size: 12px;
-      padding-top: 60px;
-    }
-
-    /* ── Bottom panels ────────────────────────────────────────────────────── */
-    #bottom-panels {
-      flex: 1; display: flex; overflow: hidden;
-    }
-
-    /* ── Items list ───────────────────────────────────────────────────────── */
-    #list-panel {
-      /* width: 37%; flex-shrink: 0; */
-      width: 30%; flex-shrink: 0;
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    #list-hd {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 7px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      flex-shrink: 0;
-    }
-    #item-count {
-      font-size: 10.5px; font-weight: 700;
-      background: rgba(99,102,241,0.1); color: #a5b4fc;
-      padding: 1px 8px; border-radius: 10px;
-    }
-    #items-scroll { flex: 1; overflow-y: auto; padding: 8px; }
-    .icard {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 9px; padding: 9px 11px; margin-bottom: 6px;
-      transition: border-color 0.15s;
-    }
-    .icard:hover { border-color: rgba(255,255,255,0.11); }
-    .icard-top { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 5px; }
-    .icard-name {
-      font-size: 12.5px; font-weight: 600; color: var(--text);
-      flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .del-btn {
-      background: none; border: none; color: rgba(239,68,68,0.35);
-      cursor: pointer; font-size: 13px; padding: 0 2px; line-height: 1;
-      transition: color 0.15s; flex-shrink: 0;
-    }
-    .del-btn:hover { color: #f87171; }
-    .imeta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .mpill {
-      font-size: 10px; color: var(--muted);
-      background: rgba(255,255,255,0.032);
-      padding: 1px 7px; border-radius: 4px;
-    }
-    .mpill-chunks { color: #a5b4fc; background: rgba(99,102,241,0.08); }
-    .empty-st {
-      text-align: center; color: var(--muted); font-size: 12px;
-      padding: 30px 14px; line-height: 1.65;
-    }
-
-    /* ── Search panel ─────────────────────────────────────────────────────── */
-    #search-panel {
-      flex: 1; display: flex; flex-direction: column; overflow: hidden;
-    }
-    #search-hd {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 14px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      flex-shrink: 0;
-    }
-    .sec-hint { font-size: 10px; color: var(--muted); }
-    #search-row {
-      display: flex; gap: 7px; padding: 9px 13px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      flex-shrink: 0;
-    }
-    #search-q {
-      flex: 1;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border); border-radius: 7px;
-      padding: 7px 12px; color: var(--text);
-      font-family: var(--font); font-size: 12.5px; outline: none;
-      transition: border-color 0.15s;
-    }
-    #search-q:focus { border-color: rgba(99,102,241,0.45); }
-    #search-q::placeholder { color: var(--muted); }
-    #search-go {
-      background: rgba(99,102,241,0.14);
-      border: 1px solid rgba(99,102,241,0.28);
-      color: #a5b4fc; border-radius: 7px; padding: 7px 18px;
-      font-family: var(--font); font-size: 12.5px; font-weight: 700;
-      cursor: pointer; transition: all 0.15s;
-    }
-    #search-go:hover  { background: rgba(99,102,241,0.24); }
-    #search-go:disabled { opacity: 0.38; cursor: not-allowed; }
-    #results-scroll { flex: 1; overflow-y: auto; padding: 8px 13px; }
-    .rcard {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 9px; padding: 10px 12px; margin-bottom: 8px;
-    }
-    .rtop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .rsource { font-size: 11px; font-weight: 700; color: #a5b4fc; }
-    .rscore {
-      font-size: 10px; color: var(--muted);
-      background: rgba(255,255,255,0.038); padding: 1px 8px; border-radius: 4px;
-    }
-    .rhigh { color: #4ade80; }
-    .rmed  { color: #fbbf24; }
-    .rlow  { color: var(--muted); }
-    .rtext {
-      font-size: 11.5px; color: rgba(221,221,240,0.65);
-      line-height: 1.55; max-height: 90px;
-      overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 4; -webkit-box-orient: vertical;
-    }
-    .rmeta { font-size: 10px; color: var(--muted); margin-top: 5px; }
-  </style>
+/* ── Responsive ── */
+@media(max-width:768px){
+  #sidebar{
+    position:absolute;left:0;top:0;height:100%;z-index:50;
+    transform:translateX(-100%);
+    box-shadow:4px 0 30px rgba(0,0,0,.5);
+  }
+  #sidebar.open{transform:translateX(0)}
+  #sb-toggle{display:flex}
+  #dz-hint{display:none}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .75s linear infinite}
+</style>
 </head>
 <body>
+<input type="file" id="fi" accept=".pdf,.docx,.doc,.txt" style="display:none">
 
-  <!-- Progress sidebar -->
-  <div id="progress-panel">
-    <div id="progress-hd">
-      <span id="progress-hd-title">Feed Progress</span>
-      <button id="progress-close" onclick="closeProgress()">×</button>
+<div id="app">
+  <nav id="nav">
+    <div id="nav-l">
+      <button id="sb-toggle" onclick="toggleSidebar()">☰</button>
+      <a href="/ui" id="back">← Chat</a>
+      <div class="vsep"></div>
+      <span id="nav-title">Knowledge</span>
     </div>
-    <div id="progress-body"></div>
+    <div id="nav-r">
+      <span id="stats-pill">loading…</span>
+      <span id="auth-label"></span>
+    </div>
+  </nav>
+
+  <div id="upload-strip">
+    <div id="drop-zone"
+         onclick="openPicker()"
+         ondragover="event.preventDefault();this.classList.add('dg')"
+         ondragleave="this.classList.remove('dg')"
+         ondrop="handleDrop(event)">
+      <span style="font-size:17px">📄</span>
+      <span id="dz-txt">Drop a file or <strong>click to choose</strong></span>
+      <span id="dz-hint">PDF · Word · TXT</span>
+    </div>
+    <button id="scan-btn" onclick="scanFolder()">📂 Scan Folder</button>
+    <div id="sel-row">
+      <div class="fchip" id="fchip"></div>
+      <input type="text" id="mod-in" placeholder="Module / path  (e.g. CIT210/Week 1)"/>
+      <button class="ghost-btn" onclick="cancelPick()">✕</button>
+      <button id="feed-btn" onclick="startFeed()">Feed →</button>
+    </div>
+    <div id="upload-status"></div>
   </div>
 
-  <!-- Hidden file input -->
-  <input type="file" id="file-input" accept=".pdf,.docx,.doc,.txt" style="display:none">
-
-  <!-- App shell -->
-  <div id="app">
-
-    <!-- Nav -->
-    <nav id="topnav">
-      <div id="topnav-left">
-        <a href="/ui" id="back-btn">← Chat</a>
-        <div class="nsep"></div>
-        <span id="nav-title">Knowledge Base</span>
+  <div id="body-row">
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <div id="tab-bar">
+        <button class="tab active" data-panel="items" onclick="switchTab('items')">Items</button>
+        <button class="tab" data-panel="queue" onclick="switchTab('queue')">Queue</button>
+        <button class="tab" data-panel="search" onclick="switchTab('search')">Search</button>
       </div>
-      <div id="topnav-right">
-        <span id="stats-badge">loading…</span>
-        <span id="auth-user"></span>
-      </div>
-    </nav>
 
-    <!-- Upload -->
-    <div id="upload-section">
-      <!-- Drop zone (default) -->
-      <div id="drop-zone"
-           onclick="openPicker()"
-           ondragover="event.preventDefault();this.classList.add('dragover')"
-           ondragleave="this.classList.remove('dragover')"
-           ondrop="handleDrop(event)">
-        <div id="drop-icon">📄</div>
-        <div>
-          <div id="drop-text">Drop a file here or <strong>click to choose</strong></div>
-          <div id="drop-hint">PDF · Word (.docx) · Plain text (.txt) — up to any size</div>
+      <!-- Items panel -->
+      <div id="panel-items" class="vis">
+        <div id="items-hd">
+          <span id="items-count">0 items</span>
+          <div id="items-actions">
+            <button id="del-sel-btn" onclick="delSelected()">Delete (0)</button>
+            <button id="sel-all-btn" onclick="toggleSelectAll()">Select All</button>
+          </div>
         </div>
+        <div id="items-body"><div class="empty-st">No items yet.</div></div>
       </div>
-      <!-- File selected row (shown after pick) -->
-      <div id="sel-row">
-        <div class="fchip" id="fchip"></div>
-        <input type="text" id="name-in" placeholder="Name this item  (e.g. Week 1 Lectures)" />
-        <button id="cancel-btn" onclick="cancelPick()">Cancel</button>
-        <button id="feed-btn"   onclick="startFeed()">Feed →</button>
+
+      <!-- Queue panel -->
+      <div id="panel-queue">
+        <div id="queue-hd">
+          <span id="queue-label">0 files</span>
+          <div id="queue-actions">
+            <button class="qact" id="q-run" onclick="startBatch()">▶ Feed All</button>
+            <button class="qact" id="q-clr" onclick="clearQueue()">Clear</button>
+          </div>
+        </div>
+        <div id="queue-empty">No files in queue.<br>Use "Scan Folder" to add files.</div>
+        <div id="queue-rows"></div>
       </div>
+
+      <!-- Search panel -->
+      <div id="panel-search">
+        <div id="sq-wrap">
+          <input type="text" id="sq" placeholder="Ask anything to test retrieval…"
+                 onkeydown="if(event.key==='Enter')doSearch()"/>
+          <button id="sq-go" onclick="doSearch()">Go</button>
+        </div>
+        <div id="sq-res"><div class="empty-st">Type a query to test retrieval.</div></div>
+      </div>
+    </div><!-- /sidebar -->
+
+    <!-- Mind-map -->
+    <div id="map-wrap">
+      <div id="map-controls">
+        <button class="mctl" onclick="zoomIn()" title="Zoom in">+</button>
+        <button class="mctl" onclick="zoomOut()" title="Zoom out">−</button>
+        <button class="mctl" onclick="fitScreen()" title="Fit to screen">⊞ Fit</button>
+        <span class="mctl-sep"></span>
+        <button class="mctl" onclick="expandAll()">Expand All</button>
+        <button class="mctl" onclick="collapseAll()">Collapse</button>
+        <button class="mctl" onclick="loadTree()" title="Refresh">⟳</button>
+      </div>
+      <div id="map-empty">No knowledge yet.<br>Upload a file to build the map.</div>
+      <svg id="mm-svg" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
+  </div>
+</div>
 
-    <!-- Main content -->
-    <div id="main-content">
+<script>
+// ─── Constants & state ────────────────────────────────────────────────────────
+const API = 'http://127.0.0.1:8000';
+const TOK = localStorage.getItem('koottam_token');
 
-      <!-- Knowledge tree -->
-      <div id="tree-section">
-        <div id="tree-hd">
-          <span class="sec-title">Knowledge Tree</span>
-          <button class="icon-btn" onclick="loadTree()" title="Refresh">⟳</button>
-        </div>
-        <div id="tree-wrap">
-          <svg id="tree-svg" xmlns="http://www.w3.org/2000/svg"></svg>
-          <div id="tree-empty">No knowledge items yet. Upload a file to build the tree.</div>
+let _selFile  = null;
+let _queue    = [];
+let _batching = false;
+let _treeData = null; // last rendered tree items
+const COL     = new Set(); // collapsed node keys
+const HITS    = new Set(); // search-highlighted node keys
+
+const FONT = 'Outfit,sans-serif';
+// Mind-map layout
+const LW = 205, NH = 42, NG = 10, PAD_X = 44, PAD_Y = 36, BR = 9;
+const NW = d => [168,152,144,136][Math.min(d,3)];
+
+const MCLR = [
+  {bg:'rgba(99,102,241,.14)', bd:'rgba(99,102,241,.42)', tx:'#c4b5fd', ln:'rgba(99,102,241,.22)'},
+  {bg:'rgba(245,158,11,.1)',  bd:'rgba(245,158,11,.36)', tx:'#fcd34d', ln:'rgba(245,158,11,.18)'},
+  {bg:'rgba(20,184,166,.1)',  bd:'rgba(20,184,166,.36)', tx:'#5eead4', ln:'rgba(20,184,166,.18)'},
+  {bg:'rgba(244,63,94,.1)',   bd:'rgba(244,63,94,.36)',  tx:'#fda4af', ln:'rgba(244,63,94,.18)'},
+  {bg:'rgba(139,92,246,.12)', bd:'rgba(139,92,246,.4)',  tx:'#ddd6fe', ln:'rgba(139,92,246,.2)'},
+];
+const FDOT = {pdf:'rgba(252,165,165,.65)',docx:'rgba(147,197,253,.65)',doc:'rgba(147,197,253,.65)',txt:'rgba(134,239,172,.65)'};
+const STEP_LABELS = {reading:'Reading',chunking:'Chunking',storing:'Storing'};
+const STEP_ORDER  = ['reading','chunking','storing'];
+
+const nodeMap = new Map(); // key → tree node
+
+// ─── Pan / zoom state ─────────────────────────────────────────────────────────
+let _tx=0,_ty=0,_scale=1;
+let _panning=false,_didPan=false;
+let _panSX=0,_panSY=0,_panOX=0,_panOY=0;
+let _contentW=800,_contentH=400,_fitNext=true;
+let _td=0,_tc={x:0,y:0};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+function xm(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function xa(s){ return xm(s).replace(/"/g,'&quot;'); }
+function fext(n){ return n.includes('.')?n.split('.').pop().toLowerCase():'txt'; }
+function febc(e){ return {pdf:'eb-pdf',docx:'eb-docx',doc:'eb-doc',txt:'eb-txt'}[e]||'eb-def'; }
+function mclrIdx(name){ let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))&0xffff;return h%MCLR.length; }
+
+async function api(path,opts={}){
+  return fetch(API+path,{...opts,headers:{...(TOK?{Authorization:`Bearer ${TOK}`}:{}), ...(opts.headers||{})}});
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+async function checkAuth(){
+  if(!TOK){location.href='/ui';return;}
+  try{
+    const r=await api('/auth/me');if(!r.ok){location.href='/ui';return;}
+    const d=await r.json();
+    if(!d.authenticated||d.role!=='admin'){alert('Admin only.');location.href='/ui';return;}
+    $('auth-label').textContent=localStorage.getItem('koottam_username')||d.username||'';
+  }catch{location.href='/ui';}
+}
+
+// ─── Tab switching & sidebar ───────────────────────────────────────────────────
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.panel===name));
+  ['items','queue','search'].forEach(p=>$('panel-'+p).classList.toggle('vis',p===name));
+}
+function toggleSidebar(){$('sidebar').classList.toggle('open')}
+
+// ─── Loaders ──────────────────────────────────────────────────────────────────
+function loadAll(){ loadStats(); loadTree(); loadItems(); }
+
+async function loadStats(){
+  try{
+    const r=await api('/knowledge/stats');if(!r.ok)return;
+    const d=await r.json();
+    $('stats-pill').textContent=`${d.doc_count} doc${d.doc_count!==1?'s':''} · ${d.total_chunks.toLocaleString()} chunks`;
+  }catch{}
+}
+
+async function loadTree(){
+  try{
+    const r=await api('/knowledge/tree');if(!r.ok)return;
+    const {tree}=await r.json();
+    _treeData=tree;
+    _fitNext=true;
+    renderMindMap(tree);
+  }catch{}
+}
+
+async function loadItems(){
+  try{
+    const r=await api('/knowledge/list');if(!r.ok)return;
+    const {items}=await r.json();
+    renderItems(items);
+  }catch{}
+}
+
+// ─── Build tree data structure ────────────────────────────────────────────────
+// name field may contain '/' for hierarchy: "CIT210/Week1"
+function buildTree(items){
+  nodeMap.clear();
+  const root={key:'__root__',name:'',type:'folder',children:[],_k:0,_f:0,modIdx:-1,depth:0};
+  nodeMap.set(root.key,root);
+  const folderIndex=new Map([['',root]]);
+
+  function getFolder(path){
+    if(folderIndex.has(path))return folderIndex.get(path);
+    const parts=path.split('/');
+    const name=parts[parts.length-1];
+    const parentPath=parts.slice(0,-1).join('/');
+    const parent=getFolder(parentPath);
+    const node={key:path,name,type:'folder',children:[],_k:0,_f:0,modIdx:-1,depth:0};
+    parent.children.push(node);
+    folderIndex.set(path,node);
+    nodeMap.set(node.key,node);
+    return node;
+  }
+
+  items.forEach(it=>{
+    const parts=it.name.split('/').map(s=>s.trim()).filter(Boolean);
+    const folderPath=parts.join('/');
+    const folder=getFolder(folderPath);
+    const fileNode={
+      key:'file:'+it.id, type:'file',
+      id:it.id, name:it.name, filename:it.filename,
+      file_type:it.file_type||'txt', chunk_count:it.chunk_count||0,
+      children:[], _k:it.chunk_count||0, _f:1, modIdx:-1, depth:0,
+    };
+    folder.children.push(fileNode);
+    nodeMap.set(fileNode.key,fileNode);
+  });
+
+  // Assign module indices (top-level children get distinct colors)
+  root.children.forEach((c,i)=>{
+    const mi=c.type==='folder'?i%MCLR.length:mclrIdx(c.name);
+    function assignMI(n,mi){n.modIdx=mi;n.children.forEach(c2=>assignMI(c2,mi));}
+    assignMI(c,mi);
+  });
+
+  // Compute totals
+  function calc(n){
+    if(n.type==='file'){n._k=n.chunk_count;n._f=1;return;}
+    n.children.forEach(c=>calc(c));
+    n._k=n.children.reduce((s,c)=>s+c._k,0);
+    n._f=n.children.reduce((s,c)=>s+c._f,0);
+  }
+  calc(root);
+  return root;
+}
+
+// ─── Mind-map layout (horizontal left-to-right tree) ─────────────────────────
+function visKids(node){ return COL.has(node.key)?[]:node.children||[]; }
+
+function layout(root){
+  let leafY=PAD_Y+NH/2;
+  function setDepth(n,d){n.depth=d;n.children.forEach(c=>setDepth(c,d+1));}
+  function setX(n,x){n.x=x;visKids(n).forEach(c=>setX(c,x+LW));}
+  function setY(n){
+    const kids=visKids(n);
+    if(!kids.length){n.y=leafY;leafY+=NH+NG;return;}
+    kids.forEach(c=>setY(c));
+    n.y=(kids[0].y+kids[kids.length-1].y)/2;
+  }
+  setDepth(root,0);
+  setX(root,PAD_X);
+  setY(root);
+  return leafY-NG/2+PAD_Y;
+}
+
+function getMaxX(n){
+  const w=NW(n.depth||0);
+  const kids=visKids(n);
+  return kids.length?Math.max(n.x+w,...kids.map(getMaxX)):n.x+w;
+}
+
+// ─── Mind-map SVG rendering ───────────────────────────────────────────────────
+function edgesOf(node){
+  let h='';
+  const kids=visKids(node);
+  if(!kids.length)return h;
+  const nw=NW(node.depth||0);
+  const rx=node.x+nw, ry=node.y;
+  kids.forEach(c=>{
+    const lx=c.x, ly=c.y;
+    const mx=(rx+lx)/2;
+    const clr=c.modIdx>=0?MCLR[c.modIdx].ln:'rgba(99,102,241,.18)';
+    h+=`<path d="M${rx} ${ry}C${mx} ${ry} ${mx} ${ly} ${lx} ${ly}" fill="none" stroke="${clr}" stroke-width="1.5"/>`;
+    h+=edgesOf(c);
+  });
+  return h;
+}
+
+function nodeEl(node){
+  const d=node.depth||0, nw=NW(d);
+  const x=node.x, y=node.y, ny=y-NH/2;
+  const isRoot=node.key==='__root__', isFile=node.type==='file';
+  const hasC=node.children&&node.children.length>0;
+  const isCol=COL.has(node.key), isHit=HITS.has(node.key);
+
+  // Colors
+  let bg,bd,tx;
+  if(isRoot){bg='rgba(99,102,241,.18)';bd='rgba(99,102,241,.5)';tx='#c4b5fd';}
+  else if(isFile){
+    bg='rgba(255,255,255,.022)';bd='rgba(255,255,255,.07)';tx='rgba(226,226,240,.6)';
+  } else {
+    const mc=MCLR[node.modIdx>=0?node.modIdx:0];
+    if(d===1){bg=mc.bg;bd=mc.bd;tx=mc.tx;}
+    else{bg='rgba(255,255,255,.034)';bd='rgba(255,255,255,.08)';tx=MCLR[node.modIdx>=0?node.modIdx:0].tx;}
+  }
+  if(isHit){bg='rgba(99,102,241,.22)';bd='rgba(99,102,241,.6)';}
+
+  // Label truncation (rough char limit based on pixel width)
+  const maxCh=Math.floor((nw-(isFile?44:22))/7.2);
+  const raw=isFile?node.filename:node.name;
+  const lbl=xm(raw.length>maxCh?raw.slice(0,maxCh-1)+'…':raw);
+
+  const extra=isFile?`data-id="${xa(node.id)}" data-fname="${xa(node.filename)}" data-nmod="${xa(node.name)}"`:
+    (hasC?'':' data-leaf="1"');
+
+  let g=`<g data-key="${xa(node.key)}" data-type="${node.type}"${extra} style="cursor:${(hasC||isRoot)?'pointer':'default'}">`;
+  g+=`<rect x="${x}" y="${ny}" width="${nw}" height="${NH}" rx="${BR}" fill="${bg}" stroke="${bd}" stroke-width="1.5"/>`;
+
+  if(isRoot){
+    // Root: centered icon + text
+    g+=`<text x="${x+nw/2}" y="${y-3}" text-anchor="middle" fill="${tx}" font-family="${FONT}" font-size="13.5" font-weight="800">⬡ Knowledge</text>`;
+    if(node._k>0)g+=`<text x="${x+nw/2}" y="${y+12}" text-anchor="middle" fill="rgba(226,226,240,.3)" font-family="${FONT}" font-size="9.5">${node._f} files · ${node._k.toLocaleString()} chunks</text>`;
+  } else if(isFile){
+    const dotClr=FDOT[node.file_type]||'rgba(255,255,255,.3)';
+    g+=`<circle cx="${x+13}" cy="${y}" r="3.5" fill="${dotClr}"/>`;
+    g+=`<text x="${x+24}" y="${y+4}" fill="${tx}" font-family="${FONT}" font-size="11">${lbl}</text>`;
+    if(node.chunk_count>0)g+=`<text x="${x+nw-8}" y="${y-4}" text-anchor="end" fill="rgba(226,226,240,.22)" font-family="${FONT}" font-size="9">${node.chunk_count} ch</text>`;
+  } else {
+    g+=`<text x="${x+12}" y="${y-3}" fill="${tx}" font-family="${FONT}" font-size="${d===1?12.5:11.5}" font-weight="${d===1?700:600}">${lbl}</text>`;
+    const badge=node._k>0?`${node._k.toLocaleString()} chunks · ${node._f} file${node._f!==1?'s':''}`:'';
+    if(badge)g+=`<text x="${x+12}" y="${y+11}" fill="rgba(226,226,240,.28)" font-family="${FONT}" font-size="9.5">${badge}</text>`;
+    if(hasC){
+      const ec=isCol?'rgba(226,226,240,.35)':'rgba(226,226,240,.22)';
+      g+=`<circle cx="${x+nw-14}" cy="${y}" r="8" fill="rgba(255,255,255,.04)" stroke="${ec}" stroke-width="1"/>`;
+      g+=`<text x="${x+nw-14}" y="${y+4}" text-anchor="middle" fill="${ec}" font-family="${FONT}" font-size="8">${isCol?'▶':'▾'}</text>`;
+    }
+  }
+
+  g+='</g>';
+  visKids(node).forEach(c=>{g+=nodeEl(c);});
+  return g;
+}
+
+function renderMindMap(items){
+  const svg=$('mm-svg'), em=$('map-empty');
+  if(!items||!items.length){
+    svg.style.display='none';em.style.display='block';return;
+  }
+  em.style.display='none';svg.style.display='block';
+
+  const root=buildTree(items);
+  _contentH=layout(root);
+  _contentW=getMaxX(root)+PAD_X;
+
+  svg.removeAttribute('viewBox');
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','100%');
+  svg.innerHTML=`<g id="mm-g" transform="translate(${_tx},${_ty}) scale(${_scale})">${edgesOf(root)}${nodeEl(root)}</g>`;
+
+  if(_fitNext){_fitNext=false;fitScreen(false);}
+}
+
+// ─── Mind-map interaction (event delegation) ──────────────────────────────────
+$('map-wrap').addEventListener('click',e=>{
+  if(_didPan){_didPan=false;return;}
+  const g=e.target.closest('[data-key]');if(!g)return;
+  const key=g.dataset.key, type=g.dataset.type;
+  if(type==='folder'){
+    const nd=nodeMap.get(key);
+    if(nd&&nd.children.length>0){
+      COL.has(key)?COL.delete(key):COL.add(key);
+      renderMindMap(_treeData);
+    }
+  }
+});
+
+function expandAll(){ COL.clear(); if(_treeData)renderMindMap(_treeData); }
+function collapseAll(){
+  nodeMap.forEach((n,k)=>{if(n.type==='folder'&&k!=='__root__'&&n.children.length)COL.add(k);});
+  if(_treeData)renderMindMap(_treeData);
+}
+
+// ─── Pan / zoom functions ──────────────────────────────────────────────────────
+const _mw=$('map-wrap');
+
+function applyTransform(){
+  const g=document.getElementById('mm-g');
+  if(g)g.setAttribute('transform',`translate(${_tx},${_ty}) scale(${_scale})`);
+}
+
+function animateTo(tx,ty,scale,dur=260){
+  const sx=_tx,sy=_ty,ss=_scale,t0=performance.now();
+  function step(now){
+    const p=Math.min(1,(now-t0)/dur);
+    const e=1-Math.pow(1-p,3); // ease-out cubic
+    _tx=sx+(tx-sx)*e;_ty=sy+(ty-sy)*e;_scale=ss+(scale-ss)*e;
+    applyTransform();
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function fitScreen(animate=true){
+  const ww=_mw.clientWidth||800,wh=_mw.clientHeight||500;
+  const sx=(ww-60)/_contentW,sy=(wh-60)/_contentH;
+  const ns=Math.min(sx,sy,1.4);
+  const nx=(ww-_contentW*ns)/2,ny=Math.max(20,(wh-_contentH*ns)/2);
+  if(animate)animateTo(nx,ny,ns);else{_tx=nx;_ty=ny;_scale=ns;applyTransform();}
+}
+
+function _zoomCenter(factor){
+  const cx=_mw.clientWidth/2,cy=_mw.clientHeight/2;
+  const ns=Math.max(0.1,Math.min(4,_scale*factor));
+  return{tx:cx-(cx-_tx)*(ns/_scale),ty:cy-(cy-_ty)*(ns/_scale),scale:ns};
+}
+function zoomIn(){const z=_zoomCenter(1.3);animateTo(z.tx,z.ty,z.scale);}
+function zoomOut(){const z=_zoomCenter(1/1.3);animateTo(z.tx,z.ty,z.scale);}
+
+// Wheel zoom — instant, cursor-centered
+_mw.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=_mw.getBoundingClientRect();
+  const cx=e.clientX-rect.left,cy=e.clientY-rect.top;
+  const factor=e.deltaY<0?1.12:1/1.12;
+  const ns=Math.max(0.1,Math.min(4,_scale*factor));
+  _tx=cx-(cx-_tx)*(ns/_scale);
+  _ty=cy-(cy-_ty)*(ns/_scale);
+  _scale=ns;
+  applyTransform();
+},{passive:false});
+
+// Mouse pan — skip when pointer is on a node
+_mw.addEventListener('mousedown',e=>{
+  if(e.target.closest('[data-key]')||e.button!==0)return;
+  _panning=true;_didPan=false;
+  _panSX=e.clientX;_panSY=e.clientY;_panOX=_tx;_panOY=_ty;
+  e.preventDefault();
+});
+window.addEventListener('mousemove',e=>{
+  if(!_panning)return;
+  const dx=e.clientX-_panSX,dy=e.clientY-_panSY;
+  if(Math.abs(dx)>2||Math.abs(dy)>2)_didPan=true;
+  _tx=_panOX+dx;_ty=_panOY+dy;
+  applyTransform();
+  _mw.style.cursor='grabbing';
+});
+window.addEventListener('mouseup',()=>{
+  if(_panning){_panning=false;_mw.style.cursor='grab';}
+});
+
+// Touch: 1-finger pan, 2-finger pinch-zoom
+_mw.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    _panning=true;_didPan=false;
+    _panSX=e.touches[0].clientX;_panSY=e.touches[0].clientY;_panOX=_tx;_panOY=_ty;
+  }else if(e.touches.length===2){
+    _panning=false;
+    _td=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+    _tc={x:(e.touches[0].clientX+e.touches[1].clientX)/2,y:(e.touches[0].clientY+e.touches[1].clientY)/2};
+  }
+},{passive:true});
+_mw.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&_panning){
+    const dx=e.touches[0].clientX-_panSX,dy=e.touches[0].clientY-_panSY;
+    if(Math.abs(dx)>2||Math.abs(dy)>2)_didPan=true;
+    _tx=_panOX+dx;_ty=_panOY+dy;
+    applyTransform();
+  }else if(e.touches.length===2){
+    const d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+    const rect=_mw.getBoundingClientRect();
+    const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-rect.left;
+    const cy=(e.touches[0].clientY+e.touches[1].clientY)/2-rect.top;
+    const ns=Math.max(0.1,Math.min(4,_scale*(d/(_td||1))));
+    _tx=cx-(cx-_tx)*(ns/_scale);_ty=cy-(cy-_ty)*(ns/_scale);_scale=ns;_td=d;
+    applyTransform();
+  }
+},{passive:false});
+_mw.addEventListener('touchend',()=>{_panning=false;});
+
+// Highlight nodes matching search results
+function highlightSearch(results){
+  HITS.clear();
+  results.forEach(r=>{
+    nodeMap.forEach((n,k)=>{
+      if(n.type==='file'&&n.name===r.source_name&&n.filename===r.source_file){
+        HITS.add(k);
+        // expand ancestor folders
+        let cur=k.startsWith('file:')?n.name:''; // module path
+        const parts=cur.split('/').filter(Boolean);
+        for(let i=parts.length;i>=1;i--){
+          const fk=parts.slice(0,i).join('/');
+          COL.delete(fk);
+        }
+      }
+    });
+  });
+  if(_treeData)renderMindMap(_treeData);
+}
+
+// ─── Items list ────────────────────────────────────────────────────────────────
+let _selItems=new Set(), _allItems=[];
+
+function updateItemsHd(){
+  const n=_selItems.size, total=_allItems.length;
+  $('items-count').textContent=`${total} item${total!==1?'s':''}${n?' · '+n+' selected':''}`;
+  const db=$('del-sel-btn'), sb=$('sel-all-btn');
+  db.style.display=n?'':'none';
+  db.textContent=`Delete (${n})`;
+  sb.textContent=(n===total&&total>0)?'Deselect All':'Select All';
+}
+
+$('items-body').addEventListener('click',e=>{
+  // ✕ quick-delete a single item
+  const d=e.target.closest('.idel');
+  if(d){e.stopPropagation();delItem(d.dataset.id,d.dataset.name);return;}
+  // Click anywhere else on the card → toggle selection
+  const card=e.target.closest('.icard[data-id]');
+  if(!card)return;
+  const id=card.dataset.id;
+  _selItems.has(id)?_selItems.delete(id):_selItems.add(id);
+  card.classList.toggle('sel',_selItems.has(id));
+  updateItemsHd();
+});
+
+function renderItems(items){
+  _allItems=items;
+  _selItems.clear();
+  updateItemsHd();
+  const el=$('items-body');
+  if(!items.length){el.innerHTML='<div class="empty-st">No items yet.</div>';return;}
+  el.innerHTML=items.map(it=>{
+    const e=(it.file_type||'txt').toLowerCase();
+    const fn=it.filename.length>22?it.filename.slice(0,22)+'…':it.filename;
+    const dt=new Date(it.created_at).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+    return `<div class="icard" data-id="${xa(it.id)}" data-name="${xa(it.name)}">
+      <div class="icard-top">
+        <div class="icb">✓</div>
+        <span class="icard-name" title="${xa(it.name)}">${xm(it.name)}</span>
+        <button class="idel" data-id="${xa(it.id)}" data-name="${xa(it.name)}" title="Quick delete">✕</button>
+      </div>
+      <div class="imeta">
+        <span class="mp mp-c">${it.chunk_count} chunks</span>
+        <span class="mp"><span class="eb ${febc(e)}">${e}</span></span>
+        <span class="mp" title="${xa(it.filename)}">${xm(fn)}</span>
+        <span class="mp">${dt}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSelectAll(){
+  if(_selItems.size===_allItems.length&&_allItems.length>0){
+    _selItems.clear();
+    document.querySelectorAll('.icard[data-id]').forEach(c=>c.classList.remove('sel'));
+  }else{
+    _allItems.forEach(it=>_selItems.add(String(it.id)));
+    document.querySelectorAll('.icard[data-id]').forEach(c=>c.classList.add('sel'));
+  }
+  updateItemsHd();
+}
+
+async function delSelected(){
+  const n=_selItems.size;if(!n)return;
+  if(!confirm(`Delete ${n} item${n!==1?'s':''} from the knowledge base? This cannot be undone.`))return;
+  const ids=[..._selItems];
+  let failed=0;
+  await Promise.all(ids.map(async id=>{
+    try{
+      const r=await api(`/knowledge/${id}`,{method:'DELETE'});
+      if(!r.ok)failed++;
+    }catch{failed++;}
+  }));
+  if(failed)alert(`${failed} item${failed!==1?'s':''} failed to delete.`);
+  loadAll();
+}
+
+async function delItem(id,name){
+  if(!confirm(`Delete "${name}"?`))return;
+  try{
+    const r=await api(`/knowledge/${id}`,{method:'DELETE'});
+    if(!r.ok){const d=await r.json();alert(d.detail||'Delete failed');return;}
+    loadAll();
+  }catch{alert('Connection error');}
+}
+
+// ─── Single file upload ────────────────────────────────────────────────────────
+const $fi=$('fi'),$dz=$('drop-zone'),$sr=$('sel-row');
+const $chip=$('fchip'),$mi=$('mod-in'),$fb=$('feed-btn');
+const $us=$('upload-status');
+
+function openPicker(){$fi.click();}
+$fi.addEventListener('change',()=>{if($fi.files[0])pickFile($fi.files[0]);});
+function handleDrop(e){
+  e.preventDefault();$dz.classList.remove('dg');
+  if(e.dataTransfer.files[0])pickFile(e.dataTransfer.files[0]);
+}
+
+function pickFile(file){
+  _selFile=file;
+  const e=fext(file.name);
+  const fn=file.name.length>26?file.name.slice(0,26)+'…':file.name;
+  $chip.innerHTML=`<span class="eb ${febc(e)}">${e}</span> ${xm(fn)}`;
+  $mi.value=file.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' ').trim();
+  $dz.style.display='none';$sr.style.display='flex';$us.style.display='none';
+  setTimeout(()=>{$mi.focus();$mi.select();},50);
+}
+
+function cancelPick(){
+  _selFile=null;$fi.value='';
+  $dz.style.display='flex';$sr.style.display='none';$us.style.display='none';
+}
+
+async function startFeed(){
+  const name=$mi.value.trim();
+  if(!name||!_selFile)return;
+  const file=_selFile;
+  $fb.disabled=true;$fb.textContent='Starting…';
+  const fd=new FormData();fd.append('file',file);fd.append('name',name);
+  try{
+    const r=await api('/knowledge/upload',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok){alert(d.detail||'Upload failed');return;}
+    cancelPick();
+    // Poll inline
+    $us.className='';$us.style.display='flex';$us.textContent='⟳ Processing…';
+    pollSingle(d.job_id);
+  }catch(e){alert('Upload error: '+e.message);}
+  finally{$fb.disabled=false;$fb.textContent='Feed →';}
+}
+
+async function pollSingle(jid){
+  try{
+    const r=await api(`/knowledge/job/${jid}`);if(!r.ok)return;
+    const job=await r.json();
+    if(job.status==='running'){
+      $us.textContent=`⟳ ${({reading:'Reading file',chunking:'Chunking text',storing:'Storing vectors'})[job.step]||job.step||'Processing'}…`;
+      setTimeout(()=>pollSingle(jid),420);
+    } else if(job.status==='done'){
+      $us.className='';$us.textContent=`✓ Done — ${job.chunk_count} chunks stored`;
+      loadAll();
+      setTimeout(()=>{$us.style.display='none';},3500);
+    } else {
+      $us.className='err';$us.textContent=`✕ ${job.error||'Unknown error'}`;
+    }
+  }catch{}
+}
+
+// ─── Recursive folder scan ────────────────────────────────────────────────────
+async function collectFiles(dirHandle,rootName,relPath='',out=[]){
+  for await(const [name,handle] of dirHandle.entries()){
+    if(handle.kind==='file'){
+      const e=fext(name);
+      if(['pdf','docx','doc','txt'].includes(e)){
+        const mod=relPath?rootName+'/'+relPath:rootName;
+        out.push({handle,filename:name,module:mod,st:'pending',msg:'',steps:[],result:''});
+      }
+    } else if(handle.kind==='directory'){
+      await collectFiles(handle,rootName,relPath?relPath+'/'+name:name,out);
+    }
+  }
+  return out;
+}
+
+async function scanFolder(){
+  if(!window.showDirectoryPicker){alert('Requires Chrome or Edge.');return;}
+  try{
+    const dir=await window.showDirectoryPicker({mode:'read'});
+    const files=await collectFiles(dir,dir.name);
+    if(!files.length){alert('No supported files found.');return;}
+    _queue=files;
+    renderQueue();
+    switchTab('queue');
+  }catch(e){if(e.name!=='AbortError')alert('Scan error: '+e.message);}
+}
+
+// ─── Queue rendering ──────────────────────────────────────────────────────────
+function renderQueue(){
+  $('queue-label').textContent=`${_queue.length} file${_queue.length!==1?'s':''}`;
+  $('queue-empty').style.display=_queue.length?'none':'block';
+  $('queue-rows').innerHTML=_queue.map((item,i)=>`
+    <div class="qi" id="qi-${i}">
+      <div class="qi-top">
+        <div class="qi-st" id="qst-${i}">${_icon(item.st)}</div>
+        <div class="qi-info">
+          <div class="qi-fname">${xm(item.filename.length>28?item.filename.slice(0,28)+'…':item.filename)}</div>
+          <input class="qi-mod-in" value="${xa(item.module)}" placeholder="Module path"
+                 onchange="_queue[${i}].module=this.value"/>
         </div>
       </div>
+      <div class="qi-steps" id="qsteps-${i}"></div>
+      <div class="qi-result" id="qres-${i}"></div>
+    </div>`).join('');
+}
 
-      <!-- Bottom: list + search -->
-      <div id="bottom-panels">
+function _icon(st){
+  if(st==='done')    return '<span style="color:#4ade80;font-size:14px">✓</span>';
+  if(st==='error')   return '<span style="color:#f87171;font-size:14px">✕</span>';
+  if(st==='running') return '<span class="spin" style="color:#a5b4fc;font-size:13px">⟳</span>';
+  return '<span style="color:var(--mu);font-size:14px">·</span>';
+}
 
-        <!-- Items list -->
-        <div id="list-panel">
-          <div id="list-hd">
-            <span class="sec-title">Stored Items</span>
-            <span id="item-count">0</span>
-          </div>
-          <div id="items-scroll">
-            <div class="empty-st">No items yet.<br>Upload a file to get started.</div>
-          </div>
-        </div>
+function updateQueueRow(i, job){
+  const item=_queue[i];
+  const el=$('qi-'+i);if(!el)return;
+  // Update status icon
+  const stEl=$('qst-'+i);if(stEl)stEl.innerHTML=_icon(item.st);
 
-        <!-- Search test -->
-        <div id="search-panel">
-          <div id="search-hd">
-            <span class="sec-title">Search Test</span>
-            <span class="sec-hint">Proves the data is queryable before RAG</span>
-          </div>
-          <div id="search-row">
-            <input type="text" id="search-q"
-                   placeholder="Ask a question or type keywords to test retrieval…"
-                   onkeydown="if(event.key==='Enter') doSearch()" />
-            <button id="search-go" onclick="doSearch()">Search</button>
-          </div>
-          <div id="results-scroll">
-            <div class="empty-st">Type a query above to test your knowledge base.</div>
-          </div>
-        </div>
+  // Update class on card
+  el.className='qi'+
+    (item.st==='running'?' running':'')+
+    (item.st==='done'?' done-ok':'')+
+    (item.st==='error'?' done-er':'');
 
-      </div><!-- /bottom-panels -->
-    </div><!-- /main-content -->
-  </div><!-- /app -->
+  // Update steps
+  const stepsEl=$('qsteps-'+i);
+  if(stepsEl&&job){
+    const steps=job.steps||[], active=job.step;
+    const isDone=job.status==='done', isErr=job.status==='error';
+    stepsEl.innerHTML=STEP_ORDER.map(key=>{
+      const f=steps.find(s=>s.label===key);
+      let cls,icon;
+      if(f&&f.error){cls='err';icon='✕';}
+      else if(f&&f.done){cls='done';icon='✓';}
+      else if((active===key||f)&&!isDone&&!isErr){cls='act';icon='<span class="spin">⟳</span>';}
+      else{cls='pend';icon='·';}
+      return `<div class="qs ${cls}"><span class="qs-i">${icon}</span><span class="qs-l">${STEP_LABELS[key]||key}</span></div>`;
+    }).join('');
+  }
 
-  <script>
-    const API   = 'http://127.0.0.1:8000';
-    const TOKEN = localStorage.getItem('koottam_token');
-    let   _selectedFile = null;
-    let   _pollTimer    = null;
+  // Update result
+  const resEl=$('qres-'+i);
+  if(resEl){
+    if(item.st==='done')resEl.textContent=item.result;
+    else if(item.st==='error')resEl.textContent=item.result;
+  }
+}
 
-    // ── Auth helpers ──────────────────────────────────────────────────────────
-    async function apiFetch(path, opts = {}) {
-      return fetch(API + path, {
-        ...opts,
-        headers: {
-          ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
-          ...(opts.headers || {}),
-        },
-      });
-    }
+function clearQueue(){
+  if(_batching&&!confirm('Stop batch?'))return;
+  _batching=false;_queue=[];renderQueue();
+}
 
-    async function checkAuth() {
-      if (!TOKEN) { window.location.href = '/ui'; return; }
-      try {
-        const r = await apiFetch('/auth/me');
-        if (!r.ok) { window.location.href = '/ui'; return; }
-        const d = await r.json();
-        if (!d.authenticated || d.role !== 'admin') {
-          alert('Knowledge Base is admin-only.');
-          window.location.href = '/ui';
-          return;
-        }
-        const un = localStorage.getItem('koottam_username') || d.username || '';
-        document.getElementById('auth-user').textContent = un;
-      } catch {
-        window.location.href = '/ui';
-      }
-    }
+// ─── Batch feed with inline queue progress ────────────────────────────────────
+async function startBatch(){
+  if(_batching||!_queue.length)return;
+  _batching=true;$('q-run').disabled=true;
 
-    // ── Data loaders ──────────────────────────────────────────────────────────
-    function loadAll() {
-      loadStats();
-      loadItems();
-      loadTree();
-    }
+  for(let i=0;i<_queue.length;i++){
+    if(!_batching)break;
+    const item=_queue[i];
+    if(item.st==='done')continue;
 
-    async function loadStats() {
-      try {
-        const r = await apiFetch('/knowledge/stats');
-        if (!r.ok) return;
-        const d = await r.json();
-        document.getElementById('stats-badge').textContent =
-          `${d.doc_count} doc${d.doc_count !== 1 ? 's' : ''} · ${d.total_chunks.toLocaleString()} chunks`;
-      } catch {}
-    }
+    item.st='running';item.result='';item.steps=[];
+    updateQueueRow(i,null);
 
-    async function loadItems() {
-      try {
-        const r = await apiFetch('/knowledge/list');
-        if (!r.ok) return;
-        const { items } = await r.json();
-        document.getElementById('item-count').textContent = items.length;
-        renderItems(items);
-      } catch {}
-    }
+    let fileObj;
+    try{fileObj=await item.handle.getFile();}
+    catch(e){item.st='error';item.result='Cannot read file';updateQueueRow(i,null);continue;}
 
-    async function loadTree() {
-      try {
-        const r = await apiFetch('/knowledge/tree');
-        if (!r.ok) return;
-        const { tree } = await r.json();
-        renderTree(tree);
-      } catch {}
-    }
+    const mod=item.module.trim()||item.filename.replace(/\.[^.]+$/,'');
+    const fd=new FormData();fd.append('file',fileObj);fd.append('name',mod);
 
-    // ── SVG tree renderer ─────────────────────────────────────────────────────
-    const TYPE_CLR = {
-      pdf:  { bg: 'rgba(239,68,68,0.13)',   bd: 'rgba(239,68,68,0.42)',   tx: '#fca5a5' },
-      docx: { bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.42)', tx: '#93c5fd' },
-      doc:  { bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.42)', tx: '#93c5fd' },
-      txt:  { bg: 'rgba(34,197,94,0.1)',    bd: 'rgba(34,197,94,0.38)',  tx: '#86efac' },
-    };
-    const DEF_CLR = { bg: 'rgba(99,102,241,0.13)', bd: 'rgba(99,102,241,0.42)', tx: '#a5b4fc' };
+    let jid;
+    try{
+      const r=await api('/knowledge/upload',{method:'POST',body:fd});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'Upload failed');
+      jid=d.job_id;
+    }catch(e){item.st='error';item.result=String(e.message||e);updateQueueRow(i,null);continue;}
 
-    function xm(s) {
-      return String(s)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function renderTree(data) {
-      const svg   = document.getElementById('tree-svg');
-      const empty = document.getElementById('tree-empty');
-
-      if (!data || !data.length) {
-        svg.style.display   = 'none';
-        empty.style.display = 'block';
-        return;
-      }
-      svg.style.display   = 'block';
-      empty.style.display = 'none';
-
-      // Layout constants
-      const PAD    = 28;
-      const RW     = 162; const RH = 36;    // root
-      const DW     = 148; const DH = 44;    // doc node
-      const CW     = 138; const CH = 26;    // chunk pill
-      const VG     = 62;                    // vertical gap between levels
-      const DG     = 20;                    // horizontal gap between doc areas
-      const CG     = 8;                     // gap between chunk pills
-      const MAX_C  = 3;                     // max visible chunks per doc
-
-      // How wide each doc area is (enough to show its chunks)
-      const dAreas = data.map(d => {
-        const nc = Math.min((d.chunk_previews||[]).length, MAX_C);
-        return Math.max(DW, nc * (CW + CG) - CG);
-      });
-
-      const totalW = dAreas.reduce((a,b)=>a+b,0) + (data.length-1)*DG + PAD*2;
-      const svgW   = Math.max(520, totalW);
-
-      const hasC   = data.some(d => (d.chunk_previews||[]).length > 0);
-      const svgH   = hasC
-        ? PAD + RH/2 + VG + DH/2 + VG + CH/2 + PAD
-        : PAD + RH/2 + VG + DH/2 + PAD + 10;
-
-      const rootX  = svgW / 2;
-      const rootY  = PAD + RH/2;
-      const docY   = rootY + VG;
-      const chunkY = docY  + VG;
-
-      // Calc doc center X positions
-      let xc = PAD;
-      const dCenters = data.map((_, i) => {
-        const cx = xc + dAreas[i]/2;
-        xc += dAreas[i] + DG;
-        return cx;
-      });
-
-      let h = '';
-
-      // Root
-      h += `
-        <rect x="${rootX-RW/2}" y="${rootY-RH/2}" width="${RW}" height="${RH}" rx="8"
-              fill="rgba(99,102,241,0.17)" stroke="rgba(99,102,241,0.5)" stroke-width="1.5"/>
-        <text x="${rootX}" y="${rootY+5}" text-anchor="middle"
-              fill="#c4b5fd" font-family="Outfit,sans-serif" font-size="12" font-weight="700">
-          ⬡ Knowledge Base
-        </text>`;
-
-      data.forEach((doc, i) => {
-        const cx  = dCenters[i];
-        const clr = TYPE_CLR[doc.file_type] || DEF_CLR;
-        const lbl = doc.name.length > 17 ? doc.name.slice(0,17)+'…' : doc.name;
-
-        // Bezier: root → doc
-        const my = (rootY + RH/2 + docY - DH/2) / 2;
-        h += `<path d="M ${rootX} ${rootY+RH/2} C ${rootX} ${my} ${cx} ${my} ${cx} ${docY-DH/2}"
-               fill="none" stroke="rgba(99,102,241,0.2)" stroke-width="1" stroke-dasharray="4,3"/>`;
-
-        // Doc node
-        h += `
-          <rect x="${cx-DW/2}" y="${docY-DH/2}" width="${DW}" height="${DH}" rx="8"
-                fill="${clr.bg}" stroke="${clr.bd}" stroke-width="1.5"/>
-          <text x="${cx}" y="${docY-6}" text-anchor="middle"
-                fill="${clr.tx}" font-family="Outfit,sans-serif" font-size="11" font-weight="700">
-            ${xm(lbl)}
-          </text>
-          <text x="${cx}" y="${docY+10}" text-anchor="middle"
-                fill="rgba(255,255,255,0.28)" font-family="Outfit,sans-serif" font-size="9.5">
-            ${doc.chunk_count} chunks · .${doc.file_type||'txt'}
-          </text>`;
-
-        // Chunk pills
-        const previews = (doc.chunk_previews||[]).slice(0, MAX_C);
-        if (previews.length) {
-          const totalCW = previews.length*(CW+CG) - CG;
-          const csx     = cx - totalCW/2 + CW/2;
-
-          previews.forEach((pv, j) => {
-            const chx = csx + j*(CW+CG);
-            const txt = pv.length > 22 ? pv.slice(0,22)+'…' : pv;
-            const m2  = (docY+DH/2 + chunkY-CH/2) / 2;
-
-            h += `<path d="M ${cx} ${docY+DH/2} C ${cx} ${m2} ${chx} ${m2} ${chx} ${chunkY-CH/2}"
-                   fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>`;
-            h += `
-              <rect x="${chx-CW/2}" y="${chunkY-CH/2}" width="${CW}" height="${CH}" rx="5"
-                    fill="rgba(255,255,255,0.027)" stroke="rgba(255,255,255,0.065)" stroke-width="1"/>
-              <text x="${chx}" y="${chunkY+4}" text-anchor="middle"
-                    fill="rgba(221,221,240,0.38)" font-family="Outfit,sans-serif" font-size="8.5">
-                ${xm(txt)}
-              </text>`;
-          });
-
-          if (doc.chunk_count > MAX_C) {
-            const mx = csx + previews.length*(CW+CG);
-            h += `<text x="${mx}" y="${chunkY+4}" text-anchor="start"
-                        fill="rgba(99,102,241,0.7)" font-family="Outfit,sans-serif" font-size="10" font-weight="600">
-                    +${doc.chunk_count - MAX_C}
-                  </text>`;
+    // Poll job until done, updating row inline
+    await new Promise(resolve=>{
+      function poll(){
+        api(`/knowledge/job/${jid}`).then(r=>r.json()).then(job=>{
+          updateQueueRow(i,job);
+          if(job.status==='running'){setTimeout(poll,420);}
+          else if(job.status==='done'){
+            item.st='done';item.result=`✓ ${job.chunk_count} chunks stored`;
+            updateQueueRow(i,job);resolve();
+          } else {
+            item.st='error';item.result=`✕ ${job.error||'Failed'}`;
+            updateQueueRow(i,job);resolve();
           }
-        }
-      });
-
-      svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
-      svg.style.width  = svgW + 'px';
-      svg.style.height = svgH + 'px';
-      svg.innerHTML = h;
-    }
-
-    // ── Items list ────────────────────────────────────────────────────────────
-    function esc(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function renderItems(items) {
-      const el = document.getElementById('items-scroll');
-      if (!items.length) {
-        el.innerHTML = '<div class="empty-st">No items yet.<br>Upload a file to get started.</div>';
-        return;
+        }).catch(()=>{item.st='error';item.result='Poll error';updateQueueRow(i,null);resolve();});
       }
-      el.innerHTML = items.map(it => {
-        const ext  = (it.file_type||'txt').toLowerCase();
-        const ecls = ['pdf','docx','doc','txt'].includes(ext) ? `e${ext}` : 'edef';
-        const fname = it.filename.length > 24 ? it.filename.slice(0,24)+'…' : it.filename;
-        const date  = new Date(it.created_at).toLocaleDateString(undefined,
-          {month:'short',day:'numeric',year:'numeric'});
-        return `
-        <div class="icard" id="ic-${it.id}">
-          <div class="icard-top">
-            <span class="icard-name" title="${esc(it.name)}">${esc(it.name)}</span>
-            <button class="del-btn" onclick="deleteItem('${esc(it.id)}','${esc(it.name)}')" title="Delete">✕</button>
-          </div>
-          <div class="imeta">
-            <span class="mpill mpill-chunks">${it.chunk_count} chunks</span>
-            <span class="mpill"><span class="ebadge ${ecls}">${ext}</span></span>
-            <span class="mpill" title="${esc(it.filename)}">${esc(fname)}</span>
-            <span class="mpill">${date}</span>
-          </div>
-        </div>`;
-      }).join('');
-    }
+      poll();
+    });
 
-    async function deleteItem(id, name) {
-      if (!confirm(`Delete "${name}" and all its chunks from the knowledge base?`)) return;
-      try {
-        const r = await apiFetch(`/knowledge/${id}`, { method: 'DELETE' });
-        if (!r.ok) { const d = await r.json(); alert(d.detail || 'Delete failed'); return; }
-        loadAll();
-      } catch { alert('Connection error'); }
-    }
+    loadAll();
+  }
 
-    // ── Upload / feed flow ────────────────────────────────────────────────────
-    const $fi    = document.getElementById('file-input');
-    const $dz    = document.getElementById('drop-zone');
-    const $sr    = document.getElementById('sel-row');
-    const $chip  = document.getElementById('fchip');
-    const $nameI = document.getElementById('name-in');
-    const $feedB = document.getElementById('feed-btn');
+  _batching=false;$('q-run').disabled=false;
+}
 
-    function openPicker() { $fi.click(); }
-    $fi.addEventListener('change', () => { if ($fi.files[0]) pickFile($fi.files[0]); });
+// ─── Search ───────────────────────────────────────────────────────────────────
+async function doSearch(){
+  const q=$('sq').value.trim();if(!q)return;
+  const go=$('sq-go'),res=$('sq-res');
+  go.disabled=true;res.innerHTML='<div class="empty-st">Searching…</div>';
+  try{
+    const r=await api('/knowledge/search',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:q,n:3}),
+    });
+    const d=await r.json();
+    if(!r.ok){res.innerHTML=`<div class="empty-st" style="color:#f87171">${xm(d.detail||'Error')}</div>`;return;}
+    if(!d.results.length){res.innerHTML='<div class="empty-st">No results found.</div>';return;}
+    res.innerHTML=d.results.map(h=>{
+      const pct=Math.round(h.score*100);
+      const sc=pct>=70?'rhi':pct>=40?'rmd':'rlo';
+      const txt=h.text.length>250?h.text.slice(0,250)+'…':h.text;
+      return `<div class="rcard">
+        <div class="rtop">
+          <span class="rsrc">📄 ${xm(h.source_name)}</span>
+          <span class="rscr ${sc}">${pct}%</span>
+        </div>
+        <div class="rtxt">${xm(txt)}</div>
+        <div class="rmeta">chunk ${h.chunk_index+1} · ${xm(h.source_file)}</div>
+      </div>`;
+    }).join('');
+    highlightSearch(d.results);
+  }catch(e){res.innerHTML=`<div class="empty-st" style="color:#f87171">Error: ${xm(e.message)}</div>`;}
+  finally{go.disabled=false;}
+}
 
-    function handleDrop(e) {
-      e.preventDefault();
-      $dz.classList.remove('dragover');
-      if (e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);
-    }
-
-    function pickFile(file) {
-      _selectedFile = file;
-      const ext  = file.name.split('.').pop().toLowerCase();
-      const ecls = ['pdf','docx','doc','txt'].includes(ext) ? `e${ext}` : 'edef';
-      const fn   = file.name.length > 32 ? file.name.slice(0,32)+'…' : file.name;
-      $chip.innerHTML = `<span class="ebadge ${ecls}">${ext}</span> ${esc(fn)}`;
-      $nameI.value    = file.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
-      $dz.style.display = 'none';
-      $sr.style.display = 'flex';
-      setTimeout(() => { $nameI.focus(); $nameI.select(); }, 50);
-    }
-
-    function cancelPick() {
-      _selectedFile   = null;
-      $fi.value       = '';
-      $dz.style.display = 'flex';
-      $sr.style.display = 'none';
-    }
-
-    async function startFeed() {
-      const name = $nameI.value.trim();
-      if (!name) { $nameI.focus(); return; }
-      if (!_selectedFile) return;
-
-      const file = _selectedFile;
-      $feedB.disabled    = true;
-      $feedB.textContent = 'Starting…';
-
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('name', name);
-
-      try {
-        const r = await apiFetch('/knowledge/upload', { method: 'POST', body: fd });
-        const d = await r.json();
-        if (!r.ok) { alert(d.detail || 'Upload failed'); return; }
-
-        cancelPick();
-        openProgress(file.name, name);
-        pollJob(d.job_id);
-
-      } catch (e) {
-        alert('Upload error: ' + e.message);
-      } finally {
-        $feedB.disabled    = false;
-        $feedB.textContent = 'Feed →';
-      }
-    }
-
-    // ── Progress sidebar ──────────────────────────────────────────────────────
-    const $pp   = document.getElementById('progress-panel');
-    const $pb   = document.getElementById('progress-body');
-
-    const STEP_LABELS = {
-      reading: 'Reading file',
-      chunking: 'Chunking text (~500 words)',
-      storing: 'Storing in vector DB',
-    };
-    const STEP_ORDER = ['reading', 'chunking', 'storing'];
-
-    function openProgress(filename, name) {
-      $pb.innerHTML = `
-        <div class="pfile">📄 <span>${esc(filename)}</span></div>
-        <div id="psteps"></div>
-        <div id="presult"></div>`;
-      $pp.classList.add('open');
-    }
-
-    function closeProgress() {
-      $pp.classList.remove('open');
-      if (_pollTimer) { clearTimeout(_pollTimer); _pollTimer = null; }
-    }
-
-    function updateProgress(job) {
-      const steps = job.steps || [];
-      const active = job.step;
-      const isDone = job.status === 'done';
-      const isErr  = job.status === 'error';
-
-      const html = STEP_ORDER.map(key => {
-        const found = steps.find(s => s.label === key);
-        let cls, icon;
-        if (found && found.error) {
-          cls = 'err';    icon = '✕';
-        } else if (found && found.done) {
-          cls = 'done';   icon = '✓';
-        } else if (active === key && job.status === 'running') {
-          cls = 'active'; icon = '<span class="spin">⟳</span>';
-        } else if (found && !found.done) {
-          cls = 'active'; icon = '<span class="spin">⟳</span>';
-        } else {
-          cls = 'pending'; icon = '·';
-        }
-        return `<div class="pstep ${cls}">
-          <span class="pstep-icon">${icon}</span>
-          <span class="pstep-label">${STEP_LABELS[key]||key}</span>
-        </div>`;
-      }).join('');
-
-      const stepsEl = document.getElementById('psteps');
-      if (stepsEl) stepsEl.innerHTML = html;
-
-      const resEl = document.getElementById('presult');
-      if (resEl) {
-        if (isDone)
-          resEl.innerHTML = `<div class="pmsg-ok">✓ Done — ${job.chunk_count} chunks stored</div>`;
-        else if (isErr)
-          resEl.innerHTML = `<div class="pmsg-err">✕ ${esc(job.error||'Unknown error')}</div>`;
-        else
-          resEl.innerHTML = '';
-      }
-    }
-
-    async function pollJob(jid) {
-      try {
-        const r = await apiFetch(`/knowledge/job/${jid}`);
-        if (!r.ok) return;
-        const job = await r.json();
-        updateProgress(job);
-        if (job.status === 'running') {
-          _pollTimer = setTimeout(() => pollJob(jid), 420);
-        } else {
-          loadAll();
-        }
-      } catch {}
-    }
-
-    // ── Search ────────────────────────────────────────────────────────────────
-    async function doSearch() {
-      const q = document.getElementById('search-q').value.trim();
-      if (!q) return;
-
-      const $go  = document.getElementById('search-go');
-      const $res = document.getElementById('results-scroll');
-      $go.disabled = true;
-      $res.innerHTML = '<div class="empty-st">Searching…</div>';
-
-      try {
-        const r = await apiFetch('/knowledge/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: q, n: 3 }),
-        });
-        const d = await r.json();
-
-        if (!r.ok) {
-          $res.innerHTML = `<div class="empty-st" style="color:#f87171">${esc(d.detail||'Search failed')}</div>`;
-          return;
-        }
-        if (!d.results.length) {
-          $res.innerHTML = '<div class="empty-st">No results found — try different keywords.</div>';
-          return;
-        }
-
-        $res.innerHTML = d.results.map((h, i) => {
-          const pct  = Math.round(h.score * 100);
-          const scls = pct >= 70 ? 'rhigh' : pct >= 40 ? 'rmed' : 'rlow';
-          const txt  = h.text.length > 350 ? h.text.slice(0,350)+'…' : h.text;
-          return `
-          <div class="rcard">
-            <div class="rtop">
-              <span class="rsource">📄 ${esc(h.source_name)}</span>
-              <span class="rscore ${scls}">match ${pct}%</span>
-            </div>
-            <div class="rtext">${esc(txt)}</div>
-            <div class="rmeta">chunk ${h.chunk_index+1} · ${esc(h.source_file)}</div>
-          </div>`;
-        }).join('');
-
-      } catch (e) {
-        $res.innerHTML = `<div class="empty-st" style="color:#f87171">Error: ${esc(e.message)}</div>`;
-      } finally {
-        $go.disabled = false;
-      }
-    }
-
-    // ── Init ──────────────────────────────────────────────────────────────────
-    (async () => {
-      await checkAuth();
-      loadAll();
-    })();
-  </script>
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(async()=>{ await checkAuth(); loadAll(); })();
+</script>
 </body>
 </html>
